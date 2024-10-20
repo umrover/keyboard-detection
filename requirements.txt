@@ -1,0 +1,8 @@
+jupyter~=1.1.1
+tqdm~=4.66.5
+
+pillow~=11.0.0
+opencv-python~=4.10.0.84
+matplotlib~=3.9.2
+
+kagglehub~=0.3.3
