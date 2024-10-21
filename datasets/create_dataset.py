@@ -42,9 +42,10 @@ def create_random_image(n):
 
 if __name__ == "__main__":
     N = 1000
+    DATASET_VERSION = 1
 
-    shutil.rmtree("assets/keyboards")
-    os.mkdir("assets/keyboards")
+    shutil.rmtree(f"assets/keyboards_v{DATASET_VERSION}")
+    os.mkdir(f"assets/keyboards_v{DATASET_VERSION}")
 
     with Pool() as p:
         r = list(tqdm(p.imap(create_random_image, range(N)), total=N))
