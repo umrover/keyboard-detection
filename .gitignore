@@ -6,4 +6,5 @@
 !**/assets/docs
 
 lightning_logs/*
+wandb/*
 **.pt
