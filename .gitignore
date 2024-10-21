@@ -1,5 +1,8 @@
-*/renders/*
-*/masks/*
-**/assets/*
+**/renders/*
+**/masks/*
 **.blend1
+
+**/assets/*
+!**/assets/docs
+
 lightning_logs/*
