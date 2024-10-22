@@ -9,44 +9,67 @@ from tqdm.notebook import tqdm
 
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
-from torchvision import tv_tensors
 
 from datasets.internal import get_frame_from_path, identity
 from utils import imshow, reorder_image_axes
 
 
+def identity(*x: torch.Tensor) -> tuple[torch.Tensor, ...] | torch.Tensor:
+    if len(x) == 1:
+        return x[0]
+    return x
+
+
 class KeyboardBBoxDataset(Dataset):
-    def __init__(self, paths: Iterable[str], _transforms: Sequence[transforms.Transform] = (identity,)):
+    def __init__(self, paths: Iterable[str]):
+
         self._images = []
         self._targets = []
 
         with open("blender/masks/regions.pkl", "rb") as file:
             targets = pickle.load(file)
 
+        f = transforms.Compose([
+            transforms.ToImage(),
+            transforms.ToDtype(torch.float32, scale=True),
+        ])
+
+        to_xyxy = transforms.ConvertBoundingBoxFormat("XYXY")
+
         for path in tqdm(paths):
             img = Image.open(path)
-            img = tv_tensors.Image(img)
-            self._images.append(img)
+            self._images.append(f(img))
 
             i = get_frame_from_path(path)
-            self._targets.append(targets[i])
+            self._targets.append(to_xyxy(targets[i]))
 
-        self._transforms = transforms.Compose(_transforms)
+        self._transforms = identity
+        self._augmentations = identity
+
+    def set_transforms(self, val: Sequence[transforms.Transform]) -> None:
+        self._transforms = transforms.Compose(val)
+
+    def set_augmentations(self, val: Sequence[transforms.Transform]) -> None:
+        self._augmentations = transforms.Compose(val)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, dict[str, Any]]:
         img = self._images[idx]
-        img = self._transforms(img)
-        return img[0], self._targets[idx]
+        target = self._targets[idx]
+
+        img, target = self._transforms(img, target)
+        img = self._augmentations(img)
+
+        return img, target
 
     def __len__(self) -> int:
         return len(self._images)
 
     def show(self, idx: int):
         img, target = self[idx]
-        img = reorder_image_axes(img.numpy())
+        img = reorder_image_axes(img.numpy()).copy()
 
         for quad in target["boxes"]:
-            x, y, w, h = quad.numpy()
-            cv.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            x1, y1, x2, y2 = quad.numpy()
+            cv.rectangle(img, (x1, y1), (x2, y2), (1.0, 0, 0), 2)
 
         imshow(img)

@@ -32,10 +32,10 @@ if __name__ == "__main__":
         boxes = extract_rects(mask)
 
         target = {"boxes":    boxes,
-                  "labels":   torch.Tensor([1] * len(boxes)),
+                  "labels":   torch.tensor([1] * len(boxes), dtype=torch.int64),
                   "image_id": i,
-                  "area":     torch.Tensor([w * h for _, _, w, h in boxes]),
-                  "iscrowd":  torch.Tensor([False] * len(boxes))}
+                  "area":     torch.tensor([w * h for _, _, w, h in boxes], dtype=torch.int64),
+                  "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool)}
 
         data[get_frame_from_path(path)] = target
 

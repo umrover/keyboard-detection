@@ -53,4 +53,9 @@ def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Ten
     raise ValueError("Only np.ndarray or torch.Tensor are supported")
 
 
-__all__ = ["get_dataset_paths", "get_dataset_norm_params", "split_train_test_valid", "reorder_image_axes"]
+def zip_collate_fn(batch):
+    return tuple(zip(*batch))
+
+
+__all__ = ["get_dataset_paths", "get_dataset_norm_params", "split_train_test_valid", "reorder_image_axes",
+           "zip_collate_fn"]
