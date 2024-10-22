@@ -1,5 +1,6 @@
 import glob
 import pickle
+import pprint
 
 from PIL import Image
 import numpy as np
@@ -23,7 +24,7 @@ if __name__ == "__main__":
 
     PATH = "blender/masks"
 
-    for i, path in enumerate(glob.glob(f"{PATH}/**")):
+    for i, path in enumerate(glob.glob(f"{PATH}/**.png")):
         image = Image.open(path).convert("RGB")
 
         mask = (np.array(image)[:, :, 0] > 1).astype("uint8")
@@ -37,6 +38,6 @@ if __name__ == "__main__":
 
         data.append(target)
 
-    print(data[0])
+    pprint.pprint(data[0])
     with open(f"{PATH}/regions.pkl", "wb") as file:
         pickle.dump(data, file)

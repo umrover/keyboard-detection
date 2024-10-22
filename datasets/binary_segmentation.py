@@ -13,20 +13,6 @@ def identity(*x):
     return x
 
 
-class KeyboardDataset(Dataset):
-    def __init__(self, _imgs, _transforms=()):
-        self._images = _imgs
-        self._transforms = transforms.Compose(_transforms)
-
-    def __getitem__(self, idx):
-        _img = self._images[idx]
-        _img = self._transforms(_img)
-        return _img
-
-    def __len__(self):
-        return len(self._images)
-
-
 class BinaryKeyboardSegmentationDataset(Dataset):
     _to_image = transforms.ToImage()
 
@@ -64,4 +50,4 @@ class BinaryKeyboardSegmentationDataset(Dataset):
         return self._resize(self._to_image(_img)).to(self._device)
 
 
-__all__ = ["KeyboardDataset", "BinaryKeyboardSegmentationDataset"]
+__all__ = ["BinaryKeyboardSegmentationDataset"]
