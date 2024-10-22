@@ -5,7 +5,7 @@ import torch
 
 def identity(*x: torch.Tensor) -> tuple[torch.Tensor, ...] | torch.Tensor:
     if len(x) == 1:
-        return x
+        return x[0]
     return x
 
 

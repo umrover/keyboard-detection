@@ -24,9 +24,13 @@ Then, using [render.py](blender/render.py), sky lightning conditions are configu
 
 ![keyboard_render.png](assets/docs/keyboard_034.png)
 
-Finally, the image is imported into Python and the process in [data-augmentation.ipynb](data-augmentation.ipynb) is followed. A random background is chosen from a dataset of 4000 landscapes, a motion blur along a random direction (0° to 360°) + random kernel size (4-16) is applied along with a vignette of random strength.
+Finally, the image is imported into Python and the process in [data-augmentation.ipynb](data-augmentation.ipynb) is followed. A random background is chosen from a dataset of 4000 landscapes.
 
-Then, contrast, exposure, sharpness, saturation are sampled from a Gaussian distribution (μ=1, σ=0.5), clamped, and applied to the image.
+[//]: # (TODO Shadows)
+
+Then, a motion blur along a random direction (0° to 360°) + random kernel size (4-16) is applied along with a vignette of random strength.
+
+Finally, contrast, exposure, sharpness, saturation are sampled from a Gaussian distribution (μ=1, σ=0.5), clamped, and applied to the image.
 
 ![keyboard.png](assets/docs/keyboard.png)
 

@@ -14,12 +14,6 @@ from datasets.internal import get_frame_from_path, identity
 from utils import imshow, reorder_image_axes
 
 
-def identity(*x: torch.Tensor) -> tuple[torch.Tensor, ...] | torch.Tensor:
-    if len(x) == 1:
-        return x[0]
-    return x
-
-
 class KeyboardBBoxDataset(Dataset):
     def __init__(self, paths: Iterable[str]):
 
