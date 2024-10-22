@@ -8,6 +8,7 @@ import cv2
 
 import torch
 from torchvision.tv_tensors import BoundingBoxes
+from datasets.internal import get_frame_from_path
 
 
 def extract_rects(img):
@@ -20,7 +21,7 @@ def extract_rects(img):
 
 
 if __name__ == "__main__":
-    data = []
+    data = {}
 
     PATH = "blender/masks"
 
@@ -36,8 +37,8 @@ if __name__ == "__main__":
                   "area":     torch.Tensor([w * h for _, _, w, h in boxes]),
                   "iscrowd":  torch.Tensor([False] * len(boxes))}
 
-        data.append(target)
+        data[get_frame_from_path(path)] = target
 
-    pprint.pprint(data[0])
+    pprint.pprint(data[1])
     with open(f"{PATH}/regions.pkl", "wb") as file:
         pickle.dump(data, file)

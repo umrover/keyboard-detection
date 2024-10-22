@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
-from .util import get_mask_path, identity
+from .internal import get_mask_path, identity
 
 
 class BinaryKeyboardSegmentationDataset(Dataset):
