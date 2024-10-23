@@ -25,7 +25,7 @@ def add_hard_overlay(img):
     blur = max(5, int(random.gauss(25, 10)))
 
     if random.random() > 0.5:
-        exp = max(0.2, random.gauss(2.5, 1))
+        exp = max(0.4, random.gauss(2.5, 1))
     else:
         exp = max(0.4, random.gauss(0.5, 0.5))
 
@@ -35,7 +35,7 @@ def add_hard_overlay(img):
 
     alpha_mask = cv.blur(alpha_mask, (blur, blur))
     alpha_mask = np.repeat(alpha_mask[:, :, np.newaxis], 4, axis=2)
-    alpha_mask = alpha_mask / 255
+    alpha_mask = alpha_mask.astype("float32") / 255
 
     bright_img = np.array(ImageEnhance.Brightness(img).enhance(exp))
     img = alpha_mask * bright_img + (1 - alpha_mask) * img
@@ -44,7 +44,12 @@ def add_hard_overlay(img):
 
 
 def apply_random_affine(img, scale_lims=(0.25, 1.5)):
-    w, h, _ = img.shape
+    if len(img.shape) == 3:
+        w, h, _ = img.shape
+    elif len(img.shape) == 2:
+        w, h = img.shape
+    else:
+        raise ValueError("Image shape must have 2 or 3 dimensions")
 
     angle = np.random.uniform(0, 360)
     scale = np.random.uniform(*scale_lims)

@@ -1,11 +1,12 @@
-**/renders/*
-**/masks/*
+**/test
+**/segmentation
+**/yolo
+**/backgrounds
+
 **.blend1
+blender/assets
 
-**/assets/*
-!**/assets/docs
-
-lightning_logs/*
-wandb/*
+lightning_logs
+wandb
 **.pt
 **.ckpt
