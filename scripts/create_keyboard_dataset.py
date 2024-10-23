@@ -16,7 +16,7 @@ _overlay_funcs = (add_hard_overlay, add_soft_shadow)
 
 
 def _get_img_with_random_background(path):
-    image = Image.open(f"blender/renders/{path}")
+    image = Image.open(f"datasets/segmentation/renders/{path}")
 
     img = Image.open(f"assets/backgrounds/{random.choice(os.listdir('assets/backgrounds'))}").convert("RGB")
     img = img.resize(image.size)
@@ -61,7 +61,7 @@ def _create_random_highlights(img):
     
 
 def create_random_image_v1(n):
-    path = random.choice(os.listdir("blender/renders"))
+    path = random.choice(os.listdir("datasets/segmentation/renders"))
 
     output = _get_img_with_random_background(path)
     output = _apply_motion_blur(output)
@@ -73,7 +73,7 @@ def create_random_image_v1(n):
 
 
 def create_random_image_v2(n):
-    path = random.choice(os.listdir("blender/renders"))
+    path = random.choice(os.listdir("datasets/segmentation/renders"))
 
     output = _get_img_with_random_background(path)
     output = _create_random_highlights(output)

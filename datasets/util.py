@@ -8,7 +8,7 @@ import torch
 
 
 def get_dataset_paths(version: int, shuffle: bool = True) -> list[str]:
-    image_paths = glob.glob(f"assets/keyboards_v{version}/**")
+    image_paths = glob.glob(f"datasets/segmentation/v{version}/**")
 
     if shuffle:
         random.shuffle(image_paths)

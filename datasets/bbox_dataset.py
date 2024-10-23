@@ -20,7 +20,7 @@ class KeyboardBBoxDataset(Dataset):
         self._images = []
         self._targets = []
 
-        with open("blender/masks/regions.pkl", "rb") as file:
+        with open("datasets/segmentation/masks/regions.pkl", "rb") as file:
             targets = pickle.load(file)
 
         f = transforms.Compose([

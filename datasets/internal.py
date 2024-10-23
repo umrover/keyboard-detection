@@ -21,4 +21,4 @@ def get_frame_from_path(path: str) -> int:
 
 
 def get_mask_path(path: str) -> str:
-    return f"blender/masks/keyboard_{get_frame_from_path(path):03d}.png"
+    return f"datasets/segmentation/masks/keyboard_{get_frame_from_path(path):03d}.png"

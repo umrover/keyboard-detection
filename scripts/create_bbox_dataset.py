@@ -15,7 +15,7 @@ from image_processing import extract_polygons, extract_rects
 if __name__ == "__main__":
     data = {}
 
-    PATH = "blender/masks"
+    PATH = "datasets/segmentation/masks"
 
     for i, path in enumerate(glob.glob(f"{PATH}/**.png")):
         image = Image.open(path).convert("RGB")
