@@ -86,3 +86,38 @@ def get_vignette_kernel(sigma, size):
 
     _kernel /= _kernel.max()
     return np.repeat(_kernel[:, :, np.newaxis], 3, axis=2)
+
+
+def extract_rects(img):
+    quads = []
+    for c in cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)[0]:
+        q = cv.boundingRect(c)
+        quads.append(q)
+
+    return quads
+
+
+def extract_quads(img):
+    qs = []
+
+    for c in cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)[0]:
+        e = 0.05 * cv.arcLength(c, True)
+
+        while len(q := cv.approxPolyDP(c, e, True)) < 4:
+            e -= 0.01
+        while len(q := cv.approxPolyDP(c, e, True)) > 4:
+            e += 0.01
+
+        qs.append(q)
+
+    return qs
+
+
+def extract_polygons(img, epsilon=0.01):
+    poly = []
+    for c in cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)[0]:
+        e = epsilon * cv.arcLength(c, True)
+        q = cv.approxPolyDP(c, e, True)
+        poly.append(q)
+
+    return poly

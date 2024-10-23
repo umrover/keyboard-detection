@@ -66,4 +66,10 @@ class KeyboardBBoxDataset(Dataset):
             x1, y1, x2, y2 = quad.numpy()
             cv.rectangle(img, (x1, y1), (x2, y2), (1.0, 0, 0), 2)
 
-        imshow(img)
+        poly = 0
+        factor = int(255 / len(target["masks"]))
+
+        for i, mask in enumerate(target["masks"]):
+            poly += i * factor * mask
+
+        imshow(img, poly)
