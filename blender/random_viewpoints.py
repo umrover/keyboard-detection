@@ -7,28 +7,77 @@ from math import radians, degrees, cos, acos, sin
 # PARAMETERS CONFIGURATION
 # --------------------------------------------
 
-
 theta_lims = (-40, 20)  # degrees (0-360), x-axis
 theta_std = 0.3
 
 phi_lims = (65, 115)  # degrees (0-180), y-axis
-phi_std = 0.2
+phi_std = 0.3
 
 rho_lims = (2, 5)
 max_roll = 15
 
+keyboard = 4
+
 N = 1000
+
+TOTAL_KEYBOARDS = 4
 
 LOCATION_SAMPLING = "gaussian"
 THETA_SAMPLING = "gaussian"
 PHI_SAMPLING = "gaussian"
 
+
 # SCRIPT BEGINS HERE
 # --------------------------------------------
 
+def get_child_by_name(collection, name):
+    for child in collection.all_objects:
+        if child.name.startswith(name):
+            return child
 
-keyboard_plane = bpy.data.objects["Orientation"]
+
+# See https://blender.stackexchange.com/questions/27491/python-vertex-normal-according-to-world
+def get_object_normal(obj):
+    normal = obj.data.vertices[0].normal.to_4d()
+    normal.w = 0
+    normal = (obj.matrix_world @ normal).to_3d()
+    return normal / normal.length
+
+
+# See https://blender.stackexchange.com/questions/169672/object-hide-render-crashes-blender-before-starting-to-bake
+def get_collection_objects(collection):
+    obj_names = [obj.name for obj in collection.all_objects]
+
+    for name in obj_names:
+        obj = bpy.data.objects.get(name)
+        yield obj
+
+
+def hide_collection(collection, val=True, exclude=()):
+    for obj in get_collection_objects(collection):
+        if obj in exclude:
+            continue
+
+        obj.hide_render = val
+        obj.hide_set(val)
+
+
+for i in range(TOTAL_KEYBOARDS):
+    objs = bpy.data.collections[f"Keyboard {i + 1}"]
+    hide_collection(objs, True)
+
+keyboard = bpy.data.collections[f"Keyboard {keyboard}"]
+keyboard_plane = get_child_by_name(keyboard, "Orientation")
 camera = bpy.data.objects["Camera"]
+
+hide_collection(keyboard, False, exclude=(keyboard_plane,))
+
+# Adjusting theta lims to account for orientation vector
+
+normal = get_object_normal(keyboard_plane)
+angle = acos(normal.dot(Vector((0, 0, 1))))
+angle = degrees(angle)
+theta_lims = (theta_lims[0] - angle, theta_lims[1] - angle)
 
 
 def get_random_arc_angle(theta1, theta2, phi1, phi2):
@@ -62,7 +111,8 @@ def get_random_arc_angle(theta1, theta2, phi1, phi2):
 
     elif PHI_SAMPLING == "gaussian":
         x = random.normal((x1 + x2) / 2, phi_std)
-        x = max(-1, min(1, x))
+        # x = max(-1, min(1, x))
+        x = max(x2, min(x1, x))
 
     else:
         raise ValueError("Unknown Phi Sampling")
@@ -97,8 +147,12 @@ def point_at(camera, target, roll=0):
 
 
 def delete_empty_objects():
+    objs = bpy.data.objects
+
     for obj in bpy.context.scene.objects:
-        obj.select_set(obj.name.startswith("Empty"))
+        if obj.name.startswith("Empty"):
+            objs.remove(objs[obj.name], do_unlink=True)
+
     bpy.ops.object.delete()
 
 
@@ -145,7 +199,7 @@ for i in range(N):
 
     mesh = bpy.data.meshes.new("Empty")
     obj = bpy.data.objects.new("Empty", mesh)
-    bpy.context.collection.objects.link(obj)
+    keyboard.objects.link(obj)
 
     mesh.from_pydata([random_translation, random_vec], [(0, 1)], [])
     mesh.update()
