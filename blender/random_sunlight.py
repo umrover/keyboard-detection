@@ -8,7 +8,6 @@ utils = bpy.data.texts["utils"].as_module()
 
 # TAKEN FROM https://gist.github.com/CGArtPython/149f0274f93f39dedcc17c2364251096
 
-
 def set_up_world_sun_light(sun_config=None, strength=1.0):
     world_node_tree = bpy.context.scene.world.node_tree
     world_node_tree.nodes.clear()

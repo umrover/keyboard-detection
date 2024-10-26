@@ -1,34 +1,53 @@
 import bpy
+from mathutils import Vector
 
-SET_MASK = False
+math_utils = bpy.data.texts["math_utils"].as_module()
+blender_utils = bpy.data.texts["blender_utils"].as_module()
 
-
-def show_object(obj, val=True, exclude=()):
-    if obj in exclude:
-        return
-
-    obj.hide_set(not val)
-    obj.hide_render = not val
-
-    for child in obj.children:
-        show_object(child, val, exclude)
+# PARAMETERS CONFIGURATION
+# --------------------------------------------
 
 
-keys = list(bpy.data.collections["Keys"].all_objects)
-keyboard = bpy.data.objects["Aluminium"]
-show_object(keyboard, not SET_MASK, exclude=keys)
+SET_MASK = True
 
-orientation = bpy.data.objects["Orientation"]
-show_object(orientation, False)
+keyboard = 2
+
+TOTAL_KEYBOARDS = 4
+K = 2
+
+# SCRIPT BEGINS HERE
+# --------------------------------------------
 
 
-def configure_material(name, color):
+for i in range(TOTAL_KEYBOARDS):
+    objs = bpy.data.collections[f"Keyboard {i + 1}"]
+    blender_utils.hide_collection(objs, True)
 
-    # Get/Create Material
+keyboard = bpy.data.collections[f"Keyboard {keyboard}"]
+orientation = blender_utils.get_child_by_name(keyboard, "Orientation")
+keys = blender_utils.get_children_by_name(keyboard, "Key")
+keys += blender_utils.get_children_by_name(keyboard, "Numpad")
 
-    mat = bpy.data.materials.get(name)
+blender_utils.hide_collection(keyboard, False)
+blender_utils.hide_collection(keyboard, SET_MASK, exclude=keys)
 
-    if mat is None:
+orientation.hide_set(True)
+orientation.hide_render = True
+
+
+def get_ith_color(i):
+    r = K * i
+    g = K * (r // 255)
+    b = K * (g // 255)
+
+    return r % 255, g % 255, b % 255
+
+
+def create_mask_material(i):
+    color = get_ith_color(i)
+    name = f"ImageMask - {color}"
+
+    if (mat := bpy.data.materials.get(name)) is None:
         mat = bpy.data.materials.new(name=name)
 
     # Set Material's Emission
@@ -37,14 +56,12 @@ def configure_material(name, color):
     tree = mat.node_tree
     nodes = tree.nodes
 
-    # clear all nodes
     for node in nodes:
         if node.bl_idname not in {"ShaderNodeBsdfPrincipled", "ShaderNodeOutputMaterial"}:
             nodes.remove(node)
 
     color = map(lambda c: c / 255, color)
 
-    # create new emission node
     emit = nodes.new("ShaderNodeEmission")
     emit.inputs["Color"].default_value = (*color, 1)
     emit.inputs["Color"].keyframe_insert("default_value", frame=1)
@@ -53,24 +70,18 @@ def configure_material(name, color):
     return mat
 
 
-def set_obj_material(obj, index, mat):
-    if len(obj.data.materials) == index:
-        obj.data.materials.append(mat)
+black = create_mask_material(0)
 
-    obj.data.materials[index] = mat
+orientation = blender_utils.get_plane_normal(orientation)
 
-
-black = configure_material("ImageMask - Black", (0, 0, 0))
-orientation = orientation.data.polygons[0].normal
-
-# Set Keys Material
 for i, ob in enumerate(keys):
     assert i <= 255
+    print(ob)
 
-    mat = configure_material(f"ImageMask - #{i + 1}", (i + 1, i + 1, i + 1))
+    mat = create_mask_material(i + 1)
 
-    set_obj_material(ob, 1, black)
-    set_obj_material(ob, 2, mat)
+    blender_utils.set_obj_material(ob, 1, black)
+    blender_utils.set_obj_material(ob, 2, mat)
 
     for face in ob.data.polygons:
         if not SET_MASK:
@@ -81,9 +92,3 @@ for i, ob in enumerate(keys):
             face.material_index = 2
         else:
             face.material_index = 1
-
-# Set Rendering Config
-if SET_MASK:
-    bpy.context.scene.render.engine = "BLENDER_EEVEE"
-else:
-    bpy.context.scene.render.engine = "CYCLES"
