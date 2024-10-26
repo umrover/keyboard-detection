@@ -5,7 +5,8 @@
 
 **.blend1
 blender/assets
-blender/**.png
+blender/renders
+blender/masks
 
 lightning_logs
 wandb
