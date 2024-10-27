@@ -25,9 +25,9 @@ def add_hard_overlay(img):
     blur = max(5, int(random.gauss(25, 10)))
 
     if random.random() > 0.5:
-        exp = max(0.4, random.gauss(2.5, 1))
+        exp = max(0.5, random.gauss(2.5, 1))
     else:
-        exp = max(0.4, random.gauss(0.5, 0.5))
+        exp = max(0.5, random.gauss(0.75, 0.5))
 
     alpha_mask = np.zeros((*img.size, 1), dtype="uint8")
     cv.line(alpha_mask, (0, 0), img.size, (255,), thickness)
@@ -126,3 +126,22 @@ def extract_polygons(img, epsilon=0.01):
         poly.append(q)
 
     return poly
+
+
+def add_chromatic_aberration(img, strength=0.01):
+    try:
+        b, g, r, _ = cv.split(img)
+    except ValueError:
+        b, g, r = cv.split(img)
+
+    height, width = img.shape[:2]
+
+    x, y = np.meshgrid(np.arange(width), np.arange(height))
+    center_x = width // 2
+    center_y = height // 2
+    distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+
+    r_shifted = cv.warpAffine(r, np.float32([[1, 0, strength * distance.max()], [0, 1, 0]]), (width, height))
+    b_shifted = cv.warpAffine(b, np.float32([[1, 0, -strength * distance.max()], [0, 1, 0]]), (width, height))
+
+    return cv.merge((r_shifted, g, b_shifted))

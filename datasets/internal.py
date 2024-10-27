@@ -21,4 +21,6 @@ def get_frame_from_path(path: str) -> int:
 
 
 def get_mask_path(path: str) -> str:
+    if "v3" in path:
+        return f"blender/masks/{os.path.basename(path)}"
     return f"datasets/segmentation/masks/keyboard_{get_frame_from_path(path):03d}.png"
