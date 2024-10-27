@@ -24,6 +24,10 @@ def get_dataset_norm_params(version: int) -> tuple[np.ndarray, np.ndarray]:
         return (np.array([0.2517634, 0.26364404, 0.27402246]),
                 np.array([0.241223, 0.24496816, 0.25682035]))
 
+    elif version == 3:
+        return (np.array([0.26772413, 0.28418145, 0.28728417]),
+                np.array([0.24711585, 0.24890053, 0.25881228]))
+
     raise ValueError(f"Unknown dataset version {version}")
 
 

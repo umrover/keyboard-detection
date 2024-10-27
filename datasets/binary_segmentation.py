@@ -1,5 +1,6 @@
 from typing import Sequence
 from tqdm.notebook import tqdm
+from multiprocessing import Pool
 
 from PIL import Image
 
@@ -15,8 +16,11 @@ class BinaryKeyboardSegmentationDataset(Dataset):
 
     def __init__(self, paths: Sequence[str], size: tuple[float, float] | None = None):
         self._resize = identity if size is None else transforms.Resize(size)
-        self._images = list(tqdm(map(self._get_img, paths), total=len(paths)))
-        self._masks = list(tqdm(map(self._get_mask, paths), total=len(paths)))
+
+        with Pool() as p:
+            images = list(tqdm(p.imap(self._get_img, paths), total=len(paths)))
+
+        self._images, self._masks = zip(*images)
 
         self._transforms = identity
         self._augmentations = transforms.Compose([transforms.ToDtype(torch.float32, scale=True)])
@@ -37,12 +41,10 @@ class BinaryKeyboardSegmentationDataset(Dataset):
     def __len__(self) -> int:
         return len(self._images)
 
-    def _get_img(self, _img: str) -> torch.Tensor:
-        return self._resize(self._to_image(Image.open(_img)))
-
-    def _get_mask(self, _img: str) -> torch.Tensor:
-        _img = Image.open(get_mask_path(_img)).convert("RGB")
-        return self._resize(self._to_image(_img))
+    def _get_img(self, _img: str) -> tuple[torch.Tensor, torch.Tensor]:
+        img = self._resize(self._to_image(Image.open(_img)))
+        mask = self._resize(self._to_image(Image.open(get_mask_path(_img)).convert("L")))
+        return img, mask
 
 
 __all__ = ["BinaryKeyboardSegmentationDataset"]

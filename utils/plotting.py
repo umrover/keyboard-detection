@@ -34,6 +34,8 @@ def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | No
     if isinstance(_mask, torch.Tensor) and _mask.device != "cpu":
         _mask = _mask.cpu()
 
+    img = reorder_image_axes(img)
+
     _, (ax1, ax2) = plt.subplots(ncols=2)
     _imshow(img, ax1, **kwargs)
     _imshow(_mask, ax2, **kwargs)
