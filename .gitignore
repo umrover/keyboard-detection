@@ -12,5 +12,6 @@ datasets/bg-20k-resized
 
 lightning_logs
 wandb
+runs
 **.pt
 **.ckpt
