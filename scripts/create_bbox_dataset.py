@@ -1,28 +1,31 @@
+import os
 import glob
-import os.path
 import pickle
 import pprint
+
+from tqdm import tqdm
 
 from PIL import Image
 import numpy as np
 import cv2 as cv
 
 import torch
-from torchvision.tv_tensors import BoundingBoxes, Mask
+from torchvision.tv_tensors import BoundingBoxes
 
-from image_processing import extract_polygons, extract_rects
+from keyrover.vision import extract_polygons, extract_rects
+from keyrover import RAW_MASKS, RAW_DATASET
 
 
 if __name__ == "__main__":
     data = {}
+    paths = glob.glob(f"{RAW_MASKS}/*.png")
 
-    PATH = "blender/masks/"
-
-    for i, path in enumerate(glob.glob(f"{PATH}/*.png")):
+    filename = ""
+    for i, path in enumerate(tqdm(paths)):
         image = Image.open(path).convert("L")
 
         mask = (np.array(image) > 1).astype("uint8")
-        boxes = BoundingBoxes(extract_rects(mask), format="XYWH", canvas_size=mask.shape)
+        boxes = BoundingBoxes(extract_rects(mask), format="XYWH", canvas_size=(mask.shape[0], mask.shape[1]))
 
         masks = []
         for poly in extract_polygons(mask):
@@ -45,5 +48,5 @@ if __name__ == "__main__":
         data[filename] = target
 
     pprint.pprint(data[filename])
-    with open(f"{PATH}/regions.pkl", "wb") as file:
+    with open(f"{RAW_DATASET}/regions.pkl", "wb") as file:
         pickle.dump(data, file)

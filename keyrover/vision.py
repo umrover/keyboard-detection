@@ -1,7 +1,8 @@
 import cv2
+import numpy as np
 
 
-def extract_rects(img):
+def extract_rects(img: np.ndarray) -> list[cv2.typing.Rect]:
     quads = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         q = cv2.boundingRect(c)
@@ -10,7 +11,7 @@ def extract_rects(img):
     return quads
 
 
-def extract_quads(img):
+def extract_quads(img: np.ndarray) -> list[cv2.typing.MatLike]:
     qs = []
 
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
@@ -26,7 +27,7 @@ def extract_quads(img):
     return qs
 
 
-def extract_polygons(img, epsilon=0.01):
+def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
     poly = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         e = epsilon * cv2.arcLength(c, True)

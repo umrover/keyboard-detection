@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image, ImageEnhance
 
 from keyrover.effects import *
-from keyrover.paths import RESIZED_BACKGROUNDS, RAW_RENDERS, SEGMENTATION_DATASET
+from keyrover import RESIZED_BACKGROUNDS, RAW_RENDERS, SEGMENTATION_DATASET
 
 _overlay_funcs = (add_hard_overlay, add_soft_shadow)
 
