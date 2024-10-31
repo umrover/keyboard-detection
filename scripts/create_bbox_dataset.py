@@ -20,12 +20,30 @@ if __name__ == "__main__":
     data = {}
     paths = glob.glob(f"{RAW_MASKS}/*.png")
 
+    OUTLIER_THRESHOLD = -0.5
+
     filename = ""
     for i, path in enumerate(tqdm(paths)):
         image = Image.open(path).convert("L")
 
         mask = (np.array(image) > 1).astype("uint8")
-        boxes = BoundingBoxes(extract_rects(mask), format="XYWH", canvas_size=(mask.shape[0], mask.shape[1]))
+
+        rects = extract_rects(mask)
+        areas = np.array(list(map(lambda rect: rect[-1] * rect[-2], rects)))
+
+        # outlier filtering
+        d = areas - np.median(areas)
+        mdev = np.median(areas)
+        s = d / mdev if mdev else np.zeros(len(d))
+
+        rects = zip(s, rects)
+        rects = list(filter(lambda rect: rect[0] > OUTLIER_THRESHOLD, rects))
+        # rects = list(filter(lambda rect: rect[-1] * rect[-2] > OUTLIER_THRESHOLD, rects))
+
+        if len(rects) == 0:
+            continue
+
+        _, rects = zip(*rects)
 
         masks = []
         for poly in extract_polygons(mask):
@@ -33,8 +51,7 @@ if __name__ == "__main__":
             cv.drawContours(mask, [poly], 0, color=(255,), thickness=cv.FILLED)
             masks.append(mask)
 
-        if len(masks) == 0:
-            continue
+        boxes = BoundingBoxes(rects, format="XYWH", canvas_size=(mask.shape[0], mask.shape[1]))
 
         target = {"boxes":    boxes,
                   "labels":   torch.tensor([1] * len(boxes), dtype=torch.int64),
