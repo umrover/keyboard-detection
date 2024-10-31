@@ -2,6 +2,7 @@
 **/segmentation
 **/yolo
 **/backgrounds
+*.zip
 
 **.blend1
 blender/assets

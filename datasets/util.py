@@ -7,8 +7,8 @@ import numpy as np
 import torch
 
 
-def get_dataset_paths(version: int, shuffle: bool = True) -> list[str]:
-    image_paths = glob.glob(f"datasets/segmentation/v{version}/**")
+def get_dataset_paths(version: int, shuffle: bool = True, base: str = "datasets/segmentation") -> list[str]:
+    image_paths = glob.glob(f"{base}/v{version}/**")
 
     if shuffle:
         random.shuffle(image_paths)
