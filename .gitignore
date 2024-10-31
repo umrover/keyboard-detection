@@ -11,3 +11,5 @@ wandb
 runs
 **.pt
 **.ckpt
+
+!**.yaml
