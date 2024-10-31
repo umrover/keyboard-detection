@@ -6,9 +6,11 @@ import random
 import numpy as np
 import torch
 
+from keyrover import SEGMENTATION_DATASET
 
-def get_dataset_paths(version: int, shuffle: bool = True, base: str = "datasets/segmentation") -> list[str]:
-    image_paths = glob.glob(f"{base}/v{version}/**")
+
+def get_dataset_paths(shuffle: bool = True, base: str = SEGMENTATION_DATASET) -> list[str]:
+    image_paths = glob.glob(f"{base}/**")
 
     if shuffle:
         random.shuffle(image_paths)
