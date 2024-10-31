@@ -1,14 +1,10 @@
-**/test
-**/segmentation
-**/yolo
-**/backgrounds
+datasets
 *.zip
 
 **.blend1
 blender/assets
 blender/renders
 blender/masks
-datasets/bg-20k-resized
 
 lightning_logs
 wandb
