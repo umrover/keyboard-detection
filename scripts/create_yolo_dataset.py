@@ -3,25 +3,26 @@ import pickle
 import shutil
 import random
 
+from tqdm import tqdm
+
+from keyrover import RAW_DATASET, SEGMENTATION_DATASET, YOLO_DATASET
+
 
 if __name__ == "__main__":
-    MASKS = "blender/masks"
-    IMAGES = "datasets/segmentation/v3"
-    OUTPUT_PATH = "datasets/yolo/"
 
     train_split = 0.90
 
-    shutil.rmtree(f"{OUTPUT_PATH}/train")
-    shutil.rmtree(f"{OUTPUT_PATH}/valid")
-    os.makedirs(f"{OUTPUT_PATH}/train/labels")
-    os.makedirs(f"{OUTPUT_PATH}/train/images")
-    os.makedirs(f"{OUTPUT_PATH}/valid/labels")
-    os.makedirs(f"{OUTPUT_PATH}/valid/images")
+    shutil.rmtree(f"{YOLO_DATASET}/train")
+    shutil.rmtree(f"{YOLO_DATASET}/valid")
+    os.makedirs(f"{YOLO_DATASET}/train/labels")
+    os.makedirs(f"{YOLO_DATASET}/train/images")
+    os.makedirs(f"{YOLO_DATASET}/valid/labels")
+    os.makedirs(f"{YOLO_DATASET}/valid/images")
 
-    with open(f"{MASKS}/regions.pkl", "rb") as file:
+    with open(f"{RAW_DATASET}/regions.pkl", "rb") as file:
         data = pickle.load(file)
 
-    for i, (frame, target) in enumerate(data.items()):
+    for i, (frame, target) in enumerate(tqdm(data.items())):
         boxes = target["boxes"]
         size = boxes.canvas_size
 
@@ -41,6 +42,6 @@ if __name__ == "__main__":
 
         folder = "valid" if random.random() > train_split else "train"
 
-        shutil.copy(f"{IMAGES}/{frame}", f"{OUTPUT_PATH}/{folder}/images/{i}.png")
-        with open(f"{OUTPUT_PATH}/{folder}/labels/{i}.txt", "w") as file:
+        shutil.copy(f"{SEGMENTATION_DATASET}/{frame}", f"{YOLO_DATASET}/{folder}/images/{i}.png")
+        with open(f"{YOLO_DATASET}/{folder}/labels/{i}.txt", "w") as file:
             file.write(boxes)
