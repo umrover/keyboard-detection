@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .datasets.util import reorder_image_axes
+from .effects import img_to_numpy, IMAGE_TYPE
 
 
 def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
@@ -41,4 +42,24 @@ def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | No
     _imshow(_mask, ax2)
 
 
-__all__ = ["imshow"]
+def imhist(img: IMAGE_TYPE, ax=None, **kwargs):
+    img = img_to_numpy(img)
+    try:
+        r, g, b = img.T
+    except ValueError:
+        r, g, b, _ = img.T
+
+    r = r.flatten()
+    g = g.flatten()
+    b = b.flatten()
+
+    if ax is None:
+        ax = plt.gca()
+
+    ax.axis("off")
+    ax.hist(r, color="#fa3c3c", **kwargs)
+    ax.hist(g, color="#74db95", **kwargs)
+    ax.hist(b, color="#42b3f5", **kwargs)
+
+
+__all__ = ["imshow", "imhist"]

@@ -1,3 +1,4 @@
+import os.path
 import pickle
 from typing import Iterable, Sequence, Any
 
@@ -10,8 +11,9 @@ from tqdm.notebook import tqdm
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
-from .internal import get_frame_from_path, identity
-from keyrover import imshow, reorder_image_axes
+from .util import reorder_image_axes
+from keyrover.ml import identity
+from keyrover import imshow, RAW_DATASET
 
 
 class KeyboardBBoxDataset(Dataset):
@@ -20,7 +22,7 @@ class KeyboardBBoxDataset(Dataset):
         self._images = []
         self._targets = []
 
-        with open("datasets/segmentation/masks/regions.pkl", "rb") as file:
+        with open(f"{RAW_DATASET}/regions.pkl", "rb") as file:
             targets = pickle.load(file)
 
         f = transforms.Compose([
@@ -33,9 +35,7 @@ class KeyboardBBoxDataset(Dataset):
         for path in tqdm(paths):
             img = Image.open(path)
             self._images.append(f(img))
-
-            i = get_frame_from_path(path)
-            self._targets.append(to_xyxy(targets[i]))
+            self._targets.append(to_xyxy(targets[os.path.basename(path)]))
 
         self._transforms = identity
         self._augmentations = identity

@@ -69,9 +69,9 @@ def add_chromatic_aberration(img: IMAGE_TYPE, strength: float = 0.01) -> np.ndar
     img = img_to_numpy(img)
 
     try:
-        b, g, r, _ = cv2.split(img)
+        r, g, b, _ = cv2.split(img)
     except ValueError:
-        b, g, r = cv2.split(img)
+        r, g, b = cv2.split(img)
 
     height, width = img.shape[:2]
 
