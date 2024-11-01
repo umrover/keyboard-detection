@@ -11,6 +11,16 @@ def extract_rects(img: np.ndarray) -> list[cv2.typing.Rect]:
     return quads
 
 
+def extract_rotated_rects(img: np.ndarray) -> list[cv2.typing.MatLike]:
+    quads = []
+    for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
+        q = cv2.minAreaRect(c)
+        q = cv2.boxPoints(q)
+        quads.append(q)
+
+    return quads
+
+
 def extract_quads(img: np.ndarray) -> list[cv2.typing.MatLike]:
     qs = []
 
@@ -37,4 +47,15 @@ def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
     return poly
 
 
-__all__ = ["extract_rects", "extract_quads", "extract_polygons"]
+def crop_rect(img, rect):
+    width, height = int(rect[1][0]), int(rect[1][1])
+
+    src_pts = rect.astype("float32")
+    dst_pts = np.array([[0, height - 1], [0, 0], [width - 1, 0], [width - 1, height - 1]], dtype="float32")
+    M = cv2.getPerspectiveTransform(src_pts, dst_pts)
+    img_crop = cv2.warpPerspective(img, M, (width, height))
+
+    return img_crop
+
+
+__all__ = ["extract_rects", "extract_quads", "extract_polygons", "extract_rotated_rects"]
