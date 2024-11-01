@@ -58,4 +58,4 @@ def crop_rect(img, rect):
     return img_crop
 
 
-__all__ = ["extract_rects", "extract_quads", "extract_polygons", "extract_rotated_rects"]
+__all__ = ["extract_rects", "extract_quads", "extract_polygons", "extract_rotated_rects", "crop_rect"]
