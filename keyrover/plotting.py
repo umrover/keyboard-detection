@@ -51,8 +51,12 @@ def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | No
 
 
 def show_images(imgs, **kwargs):
+    if len(imgs) == 1:
+        return imshow(imgs[0])
+
     a, b = get_best_grid(len(imgs))
     _, axes = plt.subplots(a, b, **kwargs)
+
     axes = [ax for row in axes for ax in row]
 
     for i, ax in enumerate(axes):
@@ -147,7 +151,8 @@ def plot_results(results, scale: int = 4, plot=True) -> np.ndarray:
     if plot:
         plt.figure(figsize=(10, 10))
         imshow(img, _ax=plt.gca())
-    return img
+    else:
+        return img
 
 
 __all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_results", "plt", "get_best_grid"]

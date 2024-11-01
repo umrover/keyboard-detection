@@ -47,7 +47,7 @@ def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
     return poly
 
 
-def crop_rect(img, rect):
+def crop_rect(img: np.ndarray, rect: np.ndarray) -> np.ndarray:
     width, height = int(rect[1][0]), int(rect[1][1])
 
     src_pts = rect.astype("float32")
