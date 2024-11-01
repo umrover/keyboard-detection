@@ -3,6 +3,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from functools import reduce
+
 from .datasets.util import reorder_image_axes
 from .effects import img_to_numpy, IMAGE_TYPE
 
@@ -25,10 +27,13 @@ def _imshow(img: np.ndarray | torch.Tensor, ax, **kwargs) -> None:
     ax.imshow(img, interpolation="nearest", **kwargs)
 
 
-def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | None = None, **kwargs) -> None:
+def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | None = None, _ax=None, **kwargs) -> None:
+    if _mask is not None and _ax is not None:
+        raise ValueError("Can't specify both mask and axis!")
+
     if _mask is None:
         plt.figure()
-        return _imshow(img, plt.gca())
+        return _imshow(img, plt.gca() if _ax is None else _ax)
 
     if isinstance(img, torch.Tensor) and img.device != "cpu":
         img = img.cpu()
@@ -40,6 +45,17 @@ def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | No
     _, (ax1, ax2) = plt.subplots(ncols=2, **kwargs)
     _imshow(img, ax1)
     _imshow(_mask, ax2)
+
+
+def show_images(imgs):
+    a, b = get_best_grid(len(imgs))
+    _, axes = plt.subplots(a, b)
+    axes = [ax for row in axes for ax in row]
+
+    for i, ax in enumerate(axes):
+        axes[i].axis("off")
+        if i < len(imgs):
+            imshow(imgs[i], _ax=axes[i])
 
 
 def imhist(img: IMAGE_TYPE, ax=None, **kwargs):
@@ -62,4 +78,36 @@ def imhist(img: IMAGE_TYPE, ax=None, **kwargs):
     ax.hist(b, color="#42b3f5", **kwargs)
 
 
-__all__ = ["imshow", "imhist"]
+def factors(_n):
+    return sorted(list(set(reduce(list.__add__, ([i, _n // i] for i in range(1, int(_n ** 0.5) + 1) if _n % i == 0)))))
+
+
+def get_best_non_empty_grid(_n):
+    f = factors(_n)
+    if len(f) % 2 == 0:
+        return f[len(f) // 2 - 1: len(f) // 2 + 1]
+    return f[len(f) // 2], f[len(f) // 2]
+
+
+def get_best_grid(_n):
+    best_score = float("infinity")
+    best_grid = None
+
+    i = _n
+    while True:
+        a, b = get_best_non_empty_grid(i)
+        diff = b - a
+        empty = i - _n
+
+        if (score := diff + empty) < best_score:
+            best_score = score
+            best_grid = a, b
+
+        if empty > best_score:
+            break
+        i += 1
+
+    return best_grid
+
+
+__all__ = ["imshow", "imhist", "show_images"]

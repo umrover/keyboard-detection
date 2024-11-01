@@ -9,6 +9,7 @@ blender/masks
 lightning_logs
 wandb
 runs
+models/yolo
 **.pt
 **.ckpt
 

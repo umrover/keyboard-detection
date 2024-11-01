@@ -3,20 +3,20 @@ from tqdm.notebook import tqdm
 from multiprocessing import Pool
 
 from PIL import Image
-import numpy as np
 
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
 from keyrover.ml import identity
+from keyrover import RAW_MASKS
 from .internal import get_mask_path
 
 
 class BinaryKeyboardSegmentationDataset(Dataset):
     _to_image = transforms.ToImage()
 
-    def __init__(self, paths: Sequence[str], size: tuple[float, float] = None, masks_path: str = "blender/masks"):
+    def __init__(self, paths: Sequence[str], size: tuple[float, float] = None, masks_path: str = RAW_MASKS):
         self._resize = identity if size is None else transforms.Resize(size)
         self._masks_path = masks_path
 
