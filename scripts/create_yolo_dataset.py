@@ -42,6 +42,9 @@ if __name__ == "__main__":
 
         folder = "valid" if random.random() > train_split else "train"
 
-        shutil.copy(f"{SEGMENTATION_DATASET}/{frame}", f"{YOLO_DATASET}/{folder}/images/{i}.png")
+        if not os.path.isfile(f"{SEGMENTATION_DATASET}/{frame}"):
+            frame = frame.removesuffix("png") + "jpg"
+
+        shutil.copy(f"{SEGMENTATION_DATASET}/{frame}", f"{YOLO_DATASET}/{folder}/images/{i}.jpg")
         with open(f"{YOLO_DATASET}/{folder}/labels/{i}.txt", "w") as file:
             file.write(boxes)

@@ -71,17 +71,77 @@ def _add_chromatic_abberation(img: IMAGE_TYPE) -> np.ndarray:
     return img
 
 
+def _add_gaussian_noise(img: IMAGE_TYPE, sigma: float = 0.1) -> np.ndarray:
+    img = img_to_numpy(img)
+    gauss = np.random.normal(0, sigma, img.shape)
+    img = img + gauss
+    return normalize(img).astype("uint8")
+
+
+def _add_salt_and_pepper_noise(img: IMAGE_TYPE, amount: float = 0.004, ratio: float = 0.5) -> np.ndarray:
+    img = img_to_numpy(img)
+
+    # Salt mode
+    num_salt = int(np.ceil(amount * img.size * ratio))
+    coords = [np.random.randint(0, i - 1, num_salt) for i in img.shape]
+    img[coords] = 1
+
+    # Pepper mode
+    num_pepper = int(np.ceil(amount * img.size * (1 - ratio)))
+    coords = [np.random.randint(0, i - 1, num_pepper) for i in img.shape]
+    img[coords] = 0
+    return normalize(img).astype("uint8")
+
+
+def _add_poisson_noise(img: IMAGE_TYPE) -> np.ndarray:
+    img = img_to_numpy(img)
+
+    vals = len(np.unique(img))
+    vals = 3 ** np.ceil(np.log2(vals))
+    img = np.random.poisson(img * vals) / vals
+    return normalize(img).astype("uint8")
+
+
+def _add_speckle_noise(img: IMAGE_TYPE) -> np.ndarray:
+    img = img_to_numpy(img)
+    img = img + img * np.random.randn(*img.shape)
+    return normalize(img).astype("uint8")
+
+
+def noisy(img: IMAGE_TYPE, noise_typ: str, **kwargs) -> np.ndarray:
+    if noise_typ == "gauss":
+        return _add_gaussian_noise(img, **kwargs)
+
+    elif noise_typ == "s&p":
+        return _add_salt_and_pepper_noise(img, **kwargs)
+
+    elif noise_typ == "poisson":
+        return _add_poisson_noise(img)
+
+    elif noise_typ == "speckle":
+        return _add_speckle_noise(img)
+
+
+def normalize(img, lim: int = 255) -> np.ndarray:
+    img -= img.min()
+    img /= img.max() / lim
+    return img
+
+
 def create_random_image(path):
     output = _get_img_with_random_background(path)
 
     output = _add_chromatic_abberation(output)
     output = _create_random_highlights(output)
     output = _apply_random_motion_blur(output)
-    # output = _apply_random_image_enhance(output, min_exposure=1, min_contrast=0.5)
-    output = Image.fromarray(output)
+    output = _apply_random_image_enhance(output, min_exposure=0.9, min_contrast=0.5)
+    output = _add_gaussian_noise(output, 0.1)
+    output = _add_poisson_noise(output)
 
-    output_path = f"{SEGMENTATION_DATASET}/{os.path.basename(path)}"
-    output.save(output_path)
+    output = Image.fromarray(output.astype("uint8"))
+
+    output_path = f"{SEGMENTATION_DATASET}/{os.path.basename(path).removesuffix('.png')}.jpg"
+    output.save(output_path, quality=random.randint(25, 80))
 
 
 if __name__ == "__main__":
@@ -90,6 +150,11 @@ if __name__ == "__main__":
     shutil.rmtree(SEGMENTATION_DATASET)
     os.mkdir(SEGMENTATION_DATASET)
 
-    with Pool() as p:
-        paths = glob.glob(f"{RAW_RENDERS}/*.png")
-        r = list(tqdm(p.imap(create_random_image, paths), total=len(paths)))
+    paths = glob.glob(f"{RAW_RENDERS}/*.png")
+
+    if len(paths) > 100:
+        with Pool() as p:
+            r = list(tqdm(p.imap(create_random_image, paths), total=len(paths)))
+    else:
+        for path in tqdm(paths):
+            create_random_image(path)

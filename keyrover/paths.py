@@ -11,5 +11,5 @@ RAW_RENDERS: Final[str] = f"{RAW_DATASET}/renders"
 RAW_MASKS: Final[str] = f"{RAW_DATASET}/masks"
 
 YOLO_DATASET: Final[str] = f"{DATASETS}/yolo"
-SEGMENTATION_DATASET: Final[str] = f"{DATASETS}/segmentation/v3"
+SEGMENTATION_DATASET: Final[str] = f"{DATASETS}/segmentation/v4"
 TEST_DATASET: Final[str] = f"{DATASETS}/test"
