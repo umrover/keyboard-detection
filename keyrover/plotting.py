@@ -17,10 +17,10 @@ def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
 
 
 def _imshow(img: np.ndarray | torch.Tensor, ax) -> None:
-    if isinstance(img, np.ndarray):
-        img = normalize(img.astype("float"))
-    elif isinstance(img, torch.Tensor):
-        img = normalize(img.float())
+    # if isinstance(img, np.ndarray):
+    #     img = normalize(img.astype("float"))
+    # elif isinstance(img, torch.Tensor):
+    #     img = normalize(img.float())
 
     reorder_image_axes(img)
 
@@ -29,6 +29,8 @@ def _imshow(img: np.ndarray | torch.Tensor, ax) -> None:
 
 
 def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | None = None, _ax=None, **kwargs) -> None:
+    img = img_to_numpy(img)
+
     if _mask is not None and _ax is not None:
         raise ValueError("Can't specify both mask and axis!")
 

@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import torch
 
 from PIL import Image, ImageEnhance
 import cv2
@@ -12,6 +13,8 @@ def img_to_numpy(img: IMAGE_TYPE) -> np.ndarray:
         return img
     if isinstance(img, Image.Image):
         return np.array(img)
+    if isinstance(img, torch.Tensor):
+        return img.numpy()
     raise TypeError("Can't convert unknown type image to numpy array")
 
 
@@ -86,7 +89,8 @@ def add_chromatic_aberration(img: IMAGE_TYPE, strength: float = 0.01) -> np.ndar
     return cv2.merge((r_shifted, g, b_shifted))
 
 
-def apply_random_affine(img: IMAGE_TYPE, scale_lims: tuple[float, float] = (0.25, 1.5)) -> np.ndarray:
+def apply_random_affine(img: IMAGE_TYPE, scale_lims: tuple[float, float] = (0.25, 1.5), angle_lims=(0, 360),
+                        translation_lims=(2, 2)) -> np.ndarray:
     img = img_to_numpy(img)
 
     if len(img.shape) == 3:
@@ -96,12 +100,13 @@ def apply_random_affine(img: IMAGE_TYPE, scale_lims: tuple[float, float] = (0.25
     else:
         raise ValueError("Image shape must have 2 or 3 dimensions")
 
-    angle = np.random.uniform(0, 360)
+    angle = np.random.uniform(*angle_lims)
     scale = np.random.uniform(*scale_lims)
     M = cv2.getRotationMatrix2D((w / 2, h / 2), angle, scale)
 
-    tx = np.random.uniform(-w / 2, w / 2)
-    ty = np.random.uniform(-h / 2, h / 2)
+    x, y = translation_lims
+    tx = np.random.uniform(-w / x, w / y)
+    ty = np.random.uniform(-h / x, h / y)
     T = np.float32([[1, 0, tx], [0, 1, ty]])
 
     img = cv2.warpAffine(img, M, (w, h))
