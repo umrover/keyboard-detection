@@ -1,32 +1,12 @@
 import random
 import numpy as np
-import torch
 
-from PIL import Image, ImageEnhance
-import cv2
+from PIL import ImageEnhance
 
-IMAGE_TYPE = np.ndarray | Image.Image
+from .image import *
 
 
-def img_to_numpy(img: IMAGE_TYPE) -> np.ndarray:
-    if isinstance(img, np.ndarray):
-        return img
-    if isinstance(img, Image.Image):
-        return np.array(img)
-    if isinstance(img, torch.Tensor):
-        return img.numpy()
-    raise TypeError("Can't convert unknown type image to numpy array")
-
-
-def img_to_PIL(img: IMAGE_TYPE) -> Image.Image:
-    if isinstance(img, np.ndarray):
-        return Image.fromarray(img)
-    if isinstance(img, Image.Image):
-        return img
-    raise TypeError("Can't convert unknown type image to PIL Image")
-
-
-def add_soft_shadow(img: IMAGE_TYPE) -> Image.Image:
+def add_soft_shadow(img: ImageType) -> Image.Image:
     img = img_to_PIL(img)
 
     opacity = random.randint(50, 200)
@@ -43,7 +23,7 @@ def add_soft_shadow(img: IMAGE_TYPE) -> Image.Image:
     return Image.alpha_composite(img, overlay)
 
 
-def add_hard_overlay(img: IMAGE_TYPE) -> Image.Image:
+def add_hard_overlay(img: ImageType) -> Image.Image:
     img = img_to_PIL(img)
 
     thickness = random.randint(100, 400)
@@ -68,7 +48,7 @@ def add_hard_overlay(img: IMAGE_TYPE) -> Image.Image:
     return Image.fromarray(img.astype("uint8"))
 
 
-def add_chromatic_aberration(img: IMAGE_TYPE, strength: float = 0.01) -> np.ndarray:
+def add_chromatic_aberration(img: ImageType, strength: float = 0.01) -> np.ndarray:
     img = img_to_numpy(img)
 
     try:
@@ -89,7 +69,7 @@ def add_chromatic_aberration(img: IMAGE_TYPE, strength: float = 0.01) -> np.ndar
     return cv2.merge((r_shifted, g, b_shifted))
 
 
-def apply_random_affine(img: IMAGE_TYPE, scale_lims: tuple[float, float] = (0.25, 1.5), angle_lims=(0, 360),
+def apply_random_affine(img: ImageType, scale_lims: tuple[float, float] = (0.25, 1.5), angle_lims=(0, 360),
                         translation_lims=(2, 2)) -> np.ndarray:
     img = img_to_numpy(img)
 
@@ -115,7 +95,7 @@ def apply_random_affine(img: IMAGE_TYPE, scale_lims: tuple[float, float] = (0.25
     return img
 
 
-def apply_motion_blur(img: IMAGE_TYPE, theta: int, ksize: int) -> np.ndarray:
+def apply_motion_blur(img: ImageType, theta: int, ksize: int) -> np.ndarray:
     img = img_to_numpy(img)
 
     blur_kernel = get_motion_blur_kernel(theta=theta, thickness=1, ksize=ksize)
@@ -123,7 +103,7 @@ def apply_motion_blur(img: IMAGE_TYPE, theta: int, ksize: int) -> np.ndarray:
     return img
 
 
-def apply_vignette(img: IMAGE_TYPE, sigma: int) -> np.ndarray:
+def apply_vignette(img: ImageType, sigma: int) -> np.ndarray:
     img = img_to_numpy(img)
     vignette_kernel = get_vignette_kernel(sigma, img.shape)
     return (vignette_kernel * img).astype("uint8")
@@ -158,5 +138,5 @@ def get_vignette_kernel(sigma: int, size: tuple[int, ...]) -> np.ndarray:
 
 
 __all__ = ["add_soft_shadow", "add_hard_overlay", "add_chromatic_aberration",
-           "get_motion_blur_kernel", "get_vignette_kernel", "img_to_PIL", "img_to_numpy", "IMAGE_TYPE",
-           "apply_motion_blur", "apply_vignette", "apply_random_affine"]
+           "get_motion_blur_kernel", "get_vignette_kernel",
+           "apply_motion_blur", "apply_vignette", "apply_random_affine", "ImageEnhance"]

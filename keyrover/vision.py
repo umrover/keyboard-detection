@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
 
-from .effects import img_to_numpy, IMAGE_TYPE
+from .image import img_to_numpy, ImageType
 
 
-def extract_rects(img: np.ndarray) -> list[cv2.typing.Rect]:
+def extract_rects(img: ImageType) -> list[cv2.typing.Rect]:
+    img = img_to_numpy(img, convert_bool=True)
+
     quads = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         q = cv2.boundingRect(c)
@@ -13,7 +15,9 @@ def extract_rects(img: np.ndarray) -> list[cv2.typing.Rect]:
     return quads
 
 
-def extract_rotated_rects(img: np.ndarray) -> list[cv2.typing.MatLike]:
+def extract_rotated_rects(img: ImageType) -> list[cv2.typing.MatLike]:
+    img = img_to_numpy(img, convert_bool=True)
+
     quads = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         q = cv2.minAreaRect(c)
@@ -24,7 +28,9 @@ def extract_rotated_rects(img: np.ndarray) -> list[cv2.typing.MatLike]:
     return quads
 
 
-def extract_quads(img: np.ndarray) -> list[cv2.typing.MatLike]:
+def extract_quads(img: ImageType) -> list[cv2.typing.MatLike]:
+    img = img_to_numpy(img, convert_bool=True)
+
     qs = []
 
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
@@ -40,7 +46,9 @@ def extract_quads(img: np.ndarray) -> list[cv2.typing.MatLike]:
     return qs
 
 
-def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
+def extract_polygons(img: ImageType, epsilon=0.01) -> list[cv2.typing.MatLike]:
+    img = img_to_numpy(img, convert_bool=True)
+
     poly = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         e = epsilon * cv2.arcLength(c, True)
@@ -50,8 +58,8 @@ def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
     return poly
 
 
-def crop_rect(img, rect: np.ndarray) -> np.ndarray:
-    img = img_to_numpy(img)
+def crop_rect(img: ImageType, rect: np.ndarray) -> np.ndarray:
+    img = img_to_numpy(img, convert_bool=True)
 
     width = int(((rect[0, 0] - rect[1, 0]) ** 2 + (rect[0, 1] - rect[1, 1]) ** 2) ** 0.5)
     height = int(((rect[2, 0] - rect[1, 0]) ** 2 + (rect[2, 1] - rect[1, 1]) ** 2) ** 0.5)

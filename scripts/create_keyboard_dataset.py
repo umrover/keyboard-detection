@@ -7,8 +7,8 @@ from tqdm import tqdm
 from multiprocessing import Pool
 
 import numpy as np
-from PIL import Image, ImageEnhance
 
+from keyrover.image import *
 from keyrover.effects import *
 from keyrover import RESIZED_BACKGROUNDS, RAW_RENDERS, SEGMENTATION_DATASET
 
@@ -27,18 +27,18 @@ def _get_img_with_random_background(path: str, backgrounds: str = RESIZED_BACKGR
     return img
 
 
-def _apply_random_motion_blur(img: IMAGE_TYPE) -> np.ndarray:
+def _apply_random_motion_blur(img: ImageType) -> np.ndarray:
     theta = random.randint(0, 360)
     ksize = random.randint(4, 16)
     return apply_motion_blur(img, theta=theta, ksize=ksize)
 
 
-def _apply_random_vignette(img: IMAGE_TYPE) -> np.ndarray:
+def _apply_random_vignette(img: ImageType) -> np.ndarray:
     sigma = random.randint(300, 600)
     return apply_vignette(img, sigma=sigma)
 
 
-def _apply_random_image_enhance(img: IMAGE_TYPE, min_exposure: float = 0.4, min_contrast: float = 0.2) -> Image.Image:
+def _apply_random_image_enhance(img: ImageType, min_exposure: float = 0.4, min_contrast: float = 0.2) -> Image.Image:
     img = img_to_PIL(img)
 
     contrast, exposure, sharpness, saturation = np.random.normal(loc=1.0, scale=0.5, size=4)
@@ -53,7 +53,7 @@ def _apply_random_image_enhance(img: IMAGE_TYPE, min_exposure: float = 0.4, min_
     return img
 
 
-def _create_random_highlights(img: IMAGE_TYPE) -> Image.Image:
+def _create_random_highlights(img: ImageType) -> Image.Image:
     img = img_to_PIL(img)
     img = img.convert("RGBA")
 
@@ -65,20 +65,20 @@ def _create_random_highlights(img: IMAGE_TYPE) -> Image.Image:
     return img.convert("RGB")
 
 
-def _add_chromatic_abberation(img: IMAGE_TYPE) -> np.ndarray:
+def _add_chromatic_abberation(img: ImageType) -> np.ndarray:
     strength = random.uniform(0, 0.005)
     img = add_chromatic_aberration(img, strength=strength)
     return img
 
 
-def _add_gaussian_noise(img: IMAGE_TYPE, sigma: float = 0.1) -> np.ndarray:
+def _add_gaussian_noise(img: ImageType, sigma: float = 0.1) -> np.ndarray:
     img = img_to_numpy(img)
     gauss = np.random.normal(0, sigma, img.shape)
     img = img + gauss
     return normalize(img).astype("uint8")
 
 
-def _add_salt_and_pepper_noise(img: IMAGE_TYPE, amount: float = 0.004, ratio: float = 0.5) -> np.ndarray:
+def _add_salt_and_pepper_noise(img: ImageType, amount: float = 0.004, ratio: float = 0.5) -> np.ndarray:
     img = img_to_numpy(img)
 
     # Salt mode
@@ -93,7 +93,7 @@ def _add_salt_and_pepper_noise(img: IMAGE_TYPE, amount: float = 0.004, ratio: fl
     return normalize(img).astype("uint8")
 
 
-def _add_poisson_noise(img: IMAGE_TYPE) -> np.ndarray:
+def _add_poisson_noise(img: ImageType) -> np.ndarray:
     img = img_to_numpy(img)
 
     vals = len(np.unique(img))
@@ -102,13 +102,13 @@ def _add_poisson_noise(img: IMAGE_TYPE) -> np.ndarray:
     return normalize(img).astype("uint8")
 
 
-def _add_speckle_noise(img: IMAGE_TYPE) -> np.ndarray:
+def _add_speckle_noise(img: ImageType) -> np.ndarray:
     img = img_to_numpy(img)
     img = img + img * np.random.randn(*img.shape)
     return normalize(img).astype("uint8")
 
 
-def noisy(img: IMAGE_TYPE, noise_typ: str, **kwargs) -> np.ndarray:
+def noisy(img: ImageType, noise_typ: str, **kwargs) -> np.ndarray:
     if noise_typ == "gauss":
         return _add_gaussian_noise(img, **kwargs)
 

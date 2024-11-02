@@ -4,7 +4,6 @@ import glob
 import random
 
 import numpy as np
-import torch
 
 from keyrover import SEGMENTATION_DATASET
 
@@ -43,28 +42,8 @@ def split_train_test_valid(arr: Sequence, train_size: float = 0.8, valid_size: f
     return arr[valid_size:train_size], arr[train_size:], arr[:valid_size]
 
 
-def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
-    if len(img.shape) == 2:
-        return img
-
-    if len(img.shape) != 3:
-        raise ValueError(f"reorder_image_axes() requires images with 2 or 3 dimensions, not {img.shape}")
-
-    if img.shape[-1] in {1, 3, 4}:
-        return img
-
-    if isinstance(img, torch.Tensor):
-        return img.permute(1, 2, 0)
-
-    elif isinstance(img, np.ndarray):
-        return img.transpose(1, 2, 0)
-
-    raise ValueError(f"Only np.ndarray or torch.Tensor are supported, not {type(img)}")
-
-
 def zip_collate_fn(batch):
     return tuple(zip(*batch))
 
 
-__all__ = ["get_dataset_paths", "get_dataset_norm_params", "split_train_test_valid", "reorder_image_axes",
-           "zip_collate_fn"]
+__all__ = ["get_dataset_paths", "get_dataset_norm_params", "split_train_test_valid", "zip_collate_fn"]
