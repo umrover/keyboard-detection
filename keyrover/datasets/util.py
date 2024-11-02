@@ -44,10 +44,13 @@ def split_train_test_valid(arr: Sequence, train_size: float = 0.8, valid_size: f
 
 
 def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
-    if img.shape[-1] in {1, 3, 4}:
+    if len(img.shape) == 2:
         return img
 
     if len(img.shape) != 3:
+        raise ValueError(f"reorder_image_axes() requires images with 2 or 3 dimensions, not {img.shape}")
+
+    if img.shape[-1] in {1, 3, 4}:
         return img
 
     if isinstance(img, torch.Tensor):
@@ -56,7 +59,7 @@ def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Ten
     elif isinstance(img, np.ndarray):
         return img.transpose(1, 2, 0)
 
-    raise ValueError("Only np.ndarray or torch.Tensor are supported")
+    raise ValueError(f"Only np.ndarray or torch.Tensor are supported, not {type(img)}")
 
 
 def zip_collate_fn(batch):

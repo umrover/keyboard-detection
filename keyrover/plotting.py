@@ -1,3 +1,5 @@
+from typing import Sequence
+
 import torch
 import numpy as np
 
@@ -11,104 +13,146 @@ from .effects import img_to_numpy, IMAGE_TYPE
 
 
 def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
+    """
+    Normalizes an array to the range [0, 1]
+    """
     img -= img.min()
     img /= img.max()
     return img
 
 
-def _imshow(img: np.ndarray | torch.Tensor, ax) -> None:
-    # if isinstance(img, np.ndarray):
-    #     img = normalize(img.astype("float"))
-    # elif isinstance(img, torch.Tensor):
-    #     img = normalize(img.float())
+def _imshow(img: IMAGE_TYPE,
+            ax: plt.Axes | None) -> None:
+    """
+    Plots an array using matplotlib
+    """
+    img = img_to_numpy(img)
 
-    reorder_image_axes(img)
+    # if the image's data is out of bounds for matplotlib plotting:
+    #   - any negative values
+    #   - values > 255 and dtype is an integer
+    #   - values > 1 and dtype is a float
+    if img.min() < 0 or (img.max() > 255 and img.dtype.kind in {"i", "u"}) or (img.max() > 1 and img.dtype.kind == "f"):
+        img = normalize(img.astype("float"))
+
+    # matplotlib cannot plot bools, so we convert to uint8
+    if img.dtype == bool:
+        img = img.astype("uint8")
+
+    # in some cases, the channel comes as the first axis, i.e. (c, w, h)
+    # so we reorder to get (w, h, c)
+    img = reorder_image_axes(img)
 
     ax.axis("off")
     ax.imshow(img, interpolation="nearest")
 
 
-def imshow(img: np.ndarray | torch.Tensor, _mask: np.ndarray | torch.Tensor | None = None, _ax=None, **kwargs) -> None:
-    img = img_to_numpy(img)
+def imshow(img: IMAGE_TYPE,
+           mask: IMAGE_TYPE | None = None,
+           ax: plt.Axes | None = None,
+           **kwargs) -> None:
+    """
+    Sets up and plots an image using matplotlib
+    """
 
-    if _mask is not None and _ax is not None:
+    # this is because when mask is specified, we create a 2-column figure
+    # but when we specify, we use an existing subplot
+    # hence, both cannot be specified
+    if mask is not None and ax is not None:
         raise ValueError("Can't specify both mask and axis!")
 
-    if _mask is None:
-        if _ax is None:
+    if mask is None:
+        if ax is None:
             plt.figure()
-            _ax = plt.gca()
-        return _imshow(img, _ax)
-
-    if isinstance(img, torch.Tensor) and img.device != "cpu":
-        img = img.cpu()
-    if isinstance(_mask, torch.Tensor) and _mask.device != "cpu":
-        _mask = _mask.cpu()
-
-    img = reorder_image_axes(img)
+            ax = plt.gca()
+        return _imshow(img, ax)
 
     _, (ax1, ax2) = plt.subplots(ncols=2, **kwargs)
     _imshow(img, ax1)
-    _imshow(_mask, ax2)
+    _imshow(mask, ax2)
 
 
-def show_images(imgs, **kwargs):
-    if len(imgs) == 1:
-        return imshow(imgs[0])
+def show_images(images: Sequence[IMAGE_TYPE],
+                **kwargs) -> None:
+    """
+    Plots a grid of images using matplotlib
+    """
 
-    a, b = get_best_grid(len(imgs))
+    # if we have only specified a single image, plot it normally and return
+    if len(images) == 1:
+        return imshow(images[0])
+
+    # creates a grid with the optimal dimensions (more square & few empty spots)
+    # that will fit the images
+    a, b = get_best_grid(len(images))
     _, axes = plt.subplots(a, b, **kwargs)
 
+    # flatten array
     axes = [ax for row in axes for ax in row]
 
     for i, ax in enumerate(axes):
         axes[i].axis("off")
-        if i < len(imgs):
-            imshow(imgs[i], _ax=axes[i])
+        if i < len(images):
+            imshow(images[i], ax=axes[i])
 
     plt.tight_layout()
 
 
-def imhist(img: IMAGE_TYPE, ax=None, **kwargs):
+def imhist(img: IMAGE_TYPE,
+           ax: plt.Axes | None = None,
+           **kwargs):
+    """
+    Plots a histogram of the RGB pixels in an image
+    """
+
     img = img_to_numpy(img)
     try:
         r, g, b = img.T
     except ValueError:
         r, g, b, _ = img.T
 
-    r = r.flatten()
-    g = g.flatten()
-    b = b.flatten()
-
     if ax is None:
         ax = plt.gca()
 
     ax.axis("off")
-    ax.hist(r, color="#fa3c3c", **kwargs)
-    ax.hist(g, color="#74db95", **kwargs)
-    ax.hist(b, color="#42b3f5", **kwargs)
+    ax.hist(r.flatten(), color="#fa3c3c", **kwargs)
+    ax.hist(g.flatten(), color="#74db95", **kwargs)
+    ax.hist(b.flatten(), color="#42b3f5", **kwargs)
 
 
-def factors(_n):
-    return sorted(list(set(reduce(list.__add__, ([i, _n // i] for i in range(1, int(_n ** 0.5) + 1) if _n % i == 0)))))
+def factors(n: int) -> list:
+    """
+    Returns a list of factors of a number in ascending order
+    """
+    return sorted(list(set(reduce(list.__add__, ([i, n // i] for i in range(1, int(n ** 0.5) + 1) if n % i == 0)))))
 
 
-def get_best_non_empty_grid(_n):
-    f = factors(_n)
+def get_median_factors(n: int) -> tuple[int, int]:
+    """
+    Returns the median factors of a number.
+
+    For numbers with odd factors, ex. 4 we have [1, 2, 4]. This will return (2, 2)
+    For numbers with even factors, ex. 12 we have [1, 2, 3, 4, 6, 12]. This will return (3, 4)
+    """
+    f = factors(n)
     if len(f) % 2 == 0:
         return f[len(f) // 2 - 1: len(f) // 2 + 1]
     return f[len(f) // 2], f[len(f) // 2]
 
 
-def get_best_grid(_n):
+def get_best_grid(n: int) -> tuple[int, int]:
+    """
+    Returns the dimensions (a, b) needed to fit n squares.
+    Minimizes empty squares (ab — n) and aspect ratio (a — b)
+    """
     best_score = float("infinity")
     best_grid = None
 
-    i = _n
+    i = n
     while True:
-        a, b = get_best_non_empty_grid(i)
+        a, b = get_median_factors(i)
         diff = b - a
-        empty = i - _n
+        empty = i - n
 
         if (score := diff + empty) < best_score:
             best_score = score
@@ -121,13 +165,17 @@ def get_best_grid(_n):
     return best_grid
 
 
-def plot_text_box(img: np.ndarray,
+def plot_text_box(img: IMAGE_TYPE,
                   p1: tuple[int, int], p2: tuple[int, int], text: str,
                   color: tuple[int, int, int] = (230, 55, 107),
                   scale: int = 5,
                   font=cv2.FONT_HERSHEY_TRIPLEX,
                   size: float = 0.3,
                   thickness: float = 0.5) -> np.ndarray:
+    """
+    Plots a box with text above it
+    """
+    img = img_to_numpy(img)
 
     x1, y1 = p1
     size *= scale
@@ -142,7 +190,12 @@ def plot_text_box(img: np.ndarray,
     return img
 
 
-def plot_results(results, scale: int = 4, plot=True) -> np.ndarray:
+def plot_yolo(results,
+              scale: int = 4,
+              plot: bool = True) -> np.ndarray | None:
+    """
+    Plots a YOLO results object.
+    """
     size = results.orig_img.shape
     img = cv2.resize(results.orig_img, (scale * size[1], scale * size[0]))
 
@@ -152,9 +205,9 @@ def plot_results(results, scale: int = 4, plot=True) -> np.ndarray:
 
     if plot:
         plt.figure(figsize=(10, 10))
-        imshow(img, _ax=plt.gca())
+        imshow(img, ax=plt.gca())
     else:
         return img
 
 
-__all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_results", "plt", "get_best_grid"]
+__all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_yolo", "plt", "get_best_grid"]
