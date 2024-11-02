@@ -1,4 +1,6 @@
 from typing import Sequence
+import random
+
 from tqdm.notebook import tqdm
 from multiprocessing import Pool
 
@@ -50,6 +52,9 @@ class BinaryKeyboardSegmentationDataset(Dataset):
         img = self._resize(self._to_image(Image.open(_img)))
         mask = self._resize(self._to_image(Image.open(get_mask_path(_img, self._masks_path)).convert("L")))
         return img, mask
+
+    def random_img(self) -> tuple[torch.Tensor, torch.Tensor]:
+        return self[random.randint(0, len(self) - 1)]
 
 
 __all__ = ["BinaryKeyboardSegmentationDataset"]

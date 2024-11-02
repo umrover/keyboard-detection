@@ -24,6 +24,18 @@ class BinarySegmentationModel(pl.LightningModule):
     def forward(self, image):
         return self.model(image)
 
+    def predict(self, image):
+        image = image.to(self.device)
+        if len(image.shape) == 3:
+            image = image.unsqueeze(0)
+
+        with torch.no_grad():
+            pred = self(image).cpu().numpy()
+
+        if len(pred) == 1:
+            return pred[0, 0]
+        return pred[:, 0]
+
     def _step(self, batch, stage):
         image, truth = batch
         prediction = self.forward(image)
