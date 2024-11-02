@@ -46,9 +46,9 @@ class BinaryKeyboardSegmentationDataset(Dataset):
     def __len__(self) -> int:
         return len(self._images)
 
-    def _get_img(self, img: str) -> tuple[torch.Tensor, torch.Tensor]:
-        img = self._resize(self._to_image(Image.open(img)))
-        mask = self._resize(self._to_image(Image.open(get_mask_path(img, self._masks_path)).convert("L")))
+    def _get_img(self, path: str) -> tuple[torch.Tensor, torch.Tensor]:
+        img = self._resize(self._to_image(Image.open(path)))
+        mask = self._resize(self._to_image(Image.open(get_mask_path(path, self._masks_path)).convert("L")))
         return img, mask
 
     def random_img(self) -> tuple[torch.Tensor, torch.Tensor]:
