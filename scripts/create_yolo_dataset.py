@@ -5,21 +5,33 @@ import random
 
 from tqdm import tqdm
 
-from keyrover import RAW_DATASET, SEGMENTATION_DATASET, YOLO_DATASET
+from keyrover import RAW_DATASET, SEGMENTATION_DATASET, YOLO_BINARY_DATASET, YOLO_MULTI_DATASET
 
 
 if __name__ == "__main__":
 
     train_split = 0.90
+    MULTICLASS = True
 
-    shutil.rmtree(f"{YOLO_DATASET}/train")
-    shutil.rmtree(f"{YOLO_DATASET}/valid")
+    if MULTICLASS:
+        regions = "multiclass-regions"
+        YOLO_DATASET = YOLO_MULTI_DATASET
+    else:
+        regions = "regions"
+        YOLO_DATASET = YOLO_BINARY_DATASET
+
+    try:
+        shutil.rmtree(f"{YOLO_DATASET}/train")
+        shutil.rmtree(f"{YOLO_DATASET}/valid")
+    except FileNotFoundError:
+        pass
+
     os.makedirs(f"{YOLO_DATASET}/train/labels")
     os.makedirs(f"{YOLO_DATASET}/train/images")
     os.makedirs(f"{YOLO_DATASET}/valid/labels")
     os.makedirs(f"{YOLO_DATASET}/valid/images")
 
-    with open(f"{RAW_DATASET}/regions.pkl", "rb") as file:
+    with open(f"{RAW_DATASET}/{regions}.pkl", "rb") as file:
         data = pickle.load(file)
 
     for i, (frame, target) in enumerate(tqdm(data.items())):
