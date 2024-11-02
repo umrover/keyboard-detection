@@ -6,9 +6,48 @@ import math
 import random
 import colorsys
 
-ColorRGBType = tuple[int, int, int]
-ColorHSVType = tuple[int, int, int]
-ColorRGBAType = tuple[int, int, int, int]
+from goopylib import color
+
+
+# TODO move to goopylib
+class Color(color.Color):
+    def __iter__(self):
+        for val in (self.red, self.green, self.blue):
+            yield val
+
+
+# TODO move to goopylib
+class ColorRGB(color.ColorRGB):
+    def __iter__(self):
+        for val in (self.red, self.green, self.blue):
+            yield val
+
+
+# TODO move to goopylib
+class ColorHSV(color.ColorHSV):
+    def __iter__(self):
+        for val in (self.hue, self.saturation, self.value):
+            yield val
+
+    def to_rgb(self):
+        rgb = super().to_rgb()
+        return ColorRGB(rgb.red, rgb.green, rgb.blue)
+
+    def copy(self):
+        return ColorHSV(self.hue, self.saturation, self.value)
+
+
+# TODO move to goopylib
+def random_hsv(h_lims: tuple[int, int] = (0, 360),
+               s_lims: tuple[float, float] = (0, 1),
+               v_lims: tuple[float, float] = (0, 1)) -> ColorHSV:
+    """
+    Returns:
+        a random HSV color
+    """
+    return ColorHSV(random.randint(*h_lims),
+                    random.uniform(*s_lims),
+                    random.uniform(*v_lims))
 
 
 # Adapted from Pablo Guerrero's answer
@@ -57,7 +96,7 @@ class Rect:
     height = property(lambda self: self.max.y - self.min.y)
 
 
-def interpolate_color(minval: float, maxval: float, val: float, color_palette: Sequence[ColorRGBType]) -> ColorRGBType:
+def interpolate_color(minval: float, maxval: float, val: float, color_palette: Sequence[Color]) -> ColorRGB:
     """
     Computes intermediate RGB color of a value in the range of minval
     to maxval (inclusive) based on a color_palette representing the range.
@@ -73,14 +112,14 @@ def interpolate_color(minval: float, maxval: float, val: float, color_palette: S
     (r1, g1, b1) = color_palette[i1]
     (r2, g2, b2) = color_palette[i2]
     f = v - i1
-    return (int(r1 + f * (r2 - r1)),
-            int(g1 + f * (g2 - g1)),
-            int(b1 + f * (b2 - b1)))
+    return ColorRGB(int(r1 + f * (r2 - r1)),
+                    int(g1 + f * (g2 - g1)),
+                    int(b1 + f * (b2 - b1)))
 
 
 def degrees_gradient(im: Image.Image,
                      rect: Rect,
-                     color_palette: Sequence[ColorRGBType],
+                     color_palette: Sequence[Color],
                      degrees: float) -> None:
 
     minval, maxval = 1, len(color_palette)
@@ -93,10 +132,10 @@ def degrees_gradient(im: Image.Image,
             f = (p.rot_x(degrees) - min_d) / range_d
             val = minval + f * delta
             color = interpolate_color(minval, maxval, val, color_palette)
-            im.putpixel((x, y), color)
+            im.putpixel((x, y), tuple(color))
 
 
-def gradient_image(size: tuple[int, int], color_palette: Sequence[ColorRGBType], degrees: float) -> Image.Image:
+def gradient_image(size: tuple[int, int], color_palette: Sequence[Color], degrees: float) -> Image.Image:
     region = Rect(0, 0, *size)
     width, height = region.max.x + 1, region.max.y + 1
     image = Image.new("RGB", (width, height), (0, 0, 0))
@@ -104,24 +143,13 @@ def gradient_image(size: tuple[int, int], color_palette: Sequence[ColorRGBType],
     return image
 
 
-def random_hsv(h_lims: tuple[float, float] = (0, 1),
-               s_lims: tuple[float, float] = (0, 1),
-               v_lims: tuple[float, float] = (0, 1)) -> ColorHSVType:
-    h = random.uniform(*h_lims)
-    s = random.uniform(*s_lims)
-    v = random.uniform(*v_lims)
-
-    h, s, v = colorsys.hsv_to_rgb(h, s, v)
-    return int(h * 255), int(s * 255), int(v * 255)
-
-
 def random_grey(lims: tuple[int, int] = (0, 255),
-                alpha_lims: tuple[int, int] | None = None) -> ColorRGBType | ColorRGBAType:
+                alpha_lims: tuple[float, float] | None = None) -> ColorRGB:
     c = random.randint(*lims)
 
     if alpha_lims is None:
-        return c, c, c
-    return c, c, c, random.randint(*alpha_lims)
+        return ColorRGB(c, c, c)
+    return ColorRGB(c, c, c, random.uniform(*alpha_lims))
 
 
 __all__ = ["colorsys", "gradient_image", "random_hsv", "random_grey"]
