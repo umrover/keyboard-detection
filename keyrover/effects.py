@@ -7,7 +7,7 @@ from .image import *
 
 
 def add_soft_shadow(img: ImageType) -> Image.Image:
-    img = img_to_PIL(img)
+    img = img_to_PIL(img).convert("RGBA")
 
     opacity = random.randint(50, 200)
     thickness = random.randint(150, 400)
@@ -24,7 +24,7 @@ def add_soft_shadow(img: ImageType) -> Image.Image:
 
 
 def add_hard_overlay(img: ImageType) -> Image.Image:
-    img = img_to_PIL(img)
+    img = img_to_PIL(img).convert("RGBA")
 
     thickness = random.randint(100, 400)
     blur = max(5, int(random.gauss(25, 10)))
