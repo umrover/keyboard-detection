@@ -6,10 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
-from functools import reduce
-
-from .datasets.util import reorder_image_axes
-from .effects import img_to_numpy, IMAGE_TYPE
+from .image import img_to_numpy, ImageType, reorder_image_axes
+from .math import get_median_factors
 
 
 def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
@@ -21,7 +19,7 @@ def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
     return img
 
 
-def _imshow(img: IMAGE_TYPE,
+def _imshow(img: ImageType,
             ax: plt.Axes | None) -> None:
     """
     Plots an array using matplotlib
@@ -47,8 +45,8 @@ def _imshow(img: IMAGE_TYPE,
     ax.imshow(img, interpolation="nearest")
 
 
-def imshow(img: IMAGE_TYPE,
-           mask: IMAGE_TYPE | None = None,
+def imshow(img: ImageType,
+           mask: ImageType | None = None,
            ax: plt.Axes | None = None,
            **kwargs) -> None:
     """
@@ -72,7 +70,7 @@ def imshow(img: IMAGE_TYPE,
     _imshow(mask, ax2)
 
 
-def show_images(images: Sequence[IMAGE_TYPE],
+def show_images(images: Sequence[ImageType],
                 **kwargs) -> None:
     """
     Plots a grid of images using matplotlib
@@ -98,7 +96,7 @@ def show_images(images: Sequence[IMAGE_TYPE],
     plt.tight_layout()
 
 
-def imhist(img: IMAGE_TYPE,
+def imhist(img: ImageType,
            ax: plt.Axes | None = None,
            **kwargs):
     """
@@ -118,26 +116,6 @@ def imhist(img: IMAGE_TYPE,
     ax.hist(r.flatten(), color="#fa3c3c", **kwargs)
     ax.hist(g.flatten(), color="#74db95", **kwargs)
     ax.hist(b.flatten(), color="#42b3f5", **kwargs)
-
-
-def factors(n: int) -> list:
-    """
-    Returns a list of factors of a number in ascending order
-    """
-    return sorted(list(set(reduce(list.__add__, ([i, n // i] for i in range(1, int(n ** 0.5) + 1) if n % i == 0)))))
-
-
-def get_median_factors(n: int) -> tuple[int, int]:
-    """
-    Returns the median factors of a number.
-
-    For numbers with odd factors, ex. 4 we have [1, 2, 4]. This will return (2, 2)
-    For numbers with even factors, ex. 12 we have [1, 2, 3, 4, 6, 12]. This will return (3, 4)
-    """
-    f = factors(n)
-    if len(f) % 2 == 0:
-        return f[len(f) // 2 - 1: len(f) // 2 + 1]
-    return f[len(f) // 2], f[len(f) // 2]
 
 
 def get_best_grid(n: int) -> tuple[int, int]:
@@ -165,7 +143,7 @@ def get_best_grid(n: int) -> tuple[int, int]:
     return best_grid
 
 
-def plot_text_box(img: IMAGE_TYPE,
+def plot_text_box(img: ImageType,
                   p1: tuple[int, int], p2: tuple[int, int], text: str,
                   color: tuple[int, int, int] = (230, 55, 107),
                   scale: int = 5,
@@ -210,4 +188,4 @@ def plot_yolo(results,
         return img
 
 
-__all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_yolo", "plt", "get_best_grid"]
+__all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_yolo", "plt"]
