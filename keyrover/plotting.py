@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Literal
 
 import torch
 import numpy as np
@@ -70,23 +70,26 @@ def imshow(img: ImageType,
     _imshow(mask, ax2)
 
 
+def gridplot(n: int, **kwargs) -> tuple[plt.Figure, Sequence[plt.Axes]]:
+    # creates a grid with the optimal dimensions (more square & few empty spots)
+    # that will fit the images
+    a, b = get_best_grid(n)
+    fig, axes = plt.subplots(a, b, **kwargs)
+
+    if a == b == 1:
+        return fig, [axes]
+
+    # flatten array
+    axes = [ax for row in axes for ax in row]
+    return fig, axes
+
+
 def show_images(images: Sequence[ImageType],
                 **kwargs) -> None:
     """
     Plots a grid of images using matplotlib
     """
-
-    # if we have only specified a single image, plot it normally and return
-    if len(images) == 1:
-        return imshow(images[0])
-
-    # creates a grid with the optimal dimensions (more square & few empty spots)
-    # that will fit the images
-    a, b = get_best_grid(len(images))
-    _, axes = plt.subplots(a, b, **kwargs)
-
-    # flatten array
-    axes = [ax for row in axes for ax in row]
+    _, axes = gridplot(len(images), **kwargs)
 
     for i, ax in enumerate(axes):
         axes[i].axis("off")
@@ -96,14 +99,20 @@ def show_images(images: Sequence[ImageType],
     plt.tight_layout()
 
 
-def imhist(img: ImageType,
+def imhist(img: ImageType | str,
            ax: plt.Axes | None = None,
+           bins: int = 50,
+           alpha: float = 0.5,
+           histtype: Literal["bar", "barstacked", "step", "stepfilled"] = "stepfilled",
            **kwargs):
     """
     Plots a histogram of the RGB pixels in an image
     """
+    if isinstance(img, str):
+        img = cv2.imread(img)
+    else:
+        img = img_to_numpy(img)
 
-    img = img_to_numpy(img)
     try:
         r, g, b = img.T
     except ValueError:
@@ -113,9 +122,9 @@ def imhist(img: ImageType,
         ax = plt.gca()
 
     ax.axis("off")
-    ax.hist(r.flatten(), color="#fa3c3c", **kwargs)
-    ax.hist(g.flatten(), color="#74db95", **kwargs)
-    ax.hist(b.flatten(), color="#42b3f5", **kwargs)
+    ax.hist(r.flatten(), color="#fa3c3c", bins=bins, alpha=alpha, histtype=histtype, **kwargs)
+    ax.hist(g.flatten(), color="#74db95", bins=bins, alpha=alpha, histtype=histtype, **kwargs)
+    ax.hist(b.flatten(), color="#42b3f5", bins=bins, alpha=alpha, histtype=histtype, **kwargs)
 
 
 def get_best_grid(n: int) -> tuple[int, int]:
@@ -143,13 +152,13 @@ def get_best_grid(n: int) -> tuple[int, int]:
     return best_grid
 
 
-def plot_text_box(img: ImageType,
-                  p1: tuple[int, int], p2: tuple[int, int], text: str,
-                  color: tuple[int, int, int] = (230, 55, 107),
-                  scale: int = 5,
-                  font=cv2.FONT_HERSHEY_TRIPLEX,
-                  size: float = 0.3,
-                  thickness: float = 0.5) -> np.ndarray:
+def draw_textbox(img: ImageType,
+                 p1: tuple[int, int], p2: tuple[int, int], text: str,
+                 color: tuple[int, int, int] = (230, 55, 107),
+                 scale: int = 5,
+                 font=cv2.FONT_HERSHEY_TRIPLEX,
+                 size: float = 0.3,
+                 thickness: float = 0.5) -> np.ndarray:
     """
     Plots a box with text above it
     """
@@ -179,7 +188,7 @@ def plot_yolo(results,
 
     for box in results.boxes:
         x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
-        plot_text_box(img, (x1, y1), (x2, y2), f"{int(100 * box.conf)}%", scale=scale)
+        draw_textbox(img, (x1, y1), (x2, y2), f"{int(100 * box.conf)}%", scale=scale)
 
     if plot:
         plt.figure(figsize=(10, 10))
@@ -188,4 +197,5 @@ def plot_yolo(results,
         return img
 
 
-__all__ = ["imshow", "imhist", "show_images", "plot_text_box", "plot_yolo", "plt"]
+__all__ = ["imshow", "imhist", "show_images", "draw_textbox", "plot_yolo", "gridplot",
+           "plt"]
