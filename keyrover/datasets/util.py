@@ -32,6 +32,13 @@ def get_dataset_norm_params(version: int) -> tuple[np.ndarray, np.ndarray]:
     raise ValueError(f"Unknown dataset version {version}")
 
 
+def calculate_dataset_norm_params(_data):
+    d = np.array([np.array(_img) for _img in _data])
+    m = d.mean(axis=(0, -1, -2))
+    s = d.std(axis=(0, -1, -2))
+    return m, s
+
+
 def split_train_test_valid(arr: Sequence, train_size: float = 0.8, valid_size: float = 0.16):
     assert 0 <= train_size <= 1
     assert 0 <= valid_size <= train_size
@@ -46,4 +53,5 @@ def zip_collate_fn(batch):
     return tuple(zip(*batch))
 
 
-__all__ = ["get_dataset_paths", "get_dataset_norm_params", "split_train_test_valid", "zip_collate_fn"]
+__all__ = ["get_dataset_paths", "get_dataset_norm_params", "calculate_dataset_norm_params", "split_train_test_valid",
+           "zip_collate_fn"]

@@ -2,7 +2,6 @@ import os.path
 import pickle
 from typing import Iterable, Sequence, Any
 
-from PIL import Image
 import cv2 as cv
 import torch
 
@@ -11,9 +10,8 @@ from tqdm.notebook import tqdm
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
-from .util import reorder_image_axes
 from keyrover.ml import identity
-from keyrover import imshow, RAW_DATASET
+from keyrover import Image, RAW_DATASET, reorder_image_axes, imshow
 
 
 class KeyboardBBoxDataset(Dataset):
@@ -58,7 +56,7 @@ class KeyboardBBoxDataset(Dataset):
     def __len__(self) -> int:
         return len(self._images)
 
-    def show(self, idx: int):
+    def show(self, idx: int) -> None:
         img, target = self[idx]
         img = reorder_image_axes(img.numpy()).copy()
 

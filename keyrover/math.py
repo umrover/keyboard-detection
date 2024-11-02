@@ -44,7 +44,7 @@ def quad_area(*args) -> float:
     raise ValueError("Unknown format for quad_area")
 
 
-def aspect_ratio(x1, y1, x2, y2, x3, y3, x4, y4):
+def aspect_ratio(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, x4=None, y4=None) -> float:
     w = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
     h = ((x3 - x2) ** 2 + (y3 - y2) ** 2) ** 0.5
     return w / h
