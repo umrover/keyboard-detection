@@ -7,12 +7,11 @@ from tqdm import tqdm
 
 from PIL import Image
 import numpy as np
-import cv2 as cv
 
 import torch
 from torchvision.tv_tensors import BoundingBoxes
 
-from keyrover.vision import extract_polygons, extract_rects
+from keyrover.vision import extract_rects
 from keyrover import RAW_MASKS, RAW_DATASET
 
 
@@ -38,18 +37,11 @@ if __name__ == "__main__":
 
         rects = zip(s, rects)
         rects = list(filter(lambda rect: rect[0] > OUTLIER_THRESHOLD, rects))
-        # rects = list(filter(lambda rect: rect[-1] * rect[-2] > OUTLIER_THRESHOLD, rects))
 
         if len(rects) == 0:
             continue
 
         _, rects = zip(*rects)
-
-        masks = []
-        for poly in extract_polygons(mask):
-            mask = np.zeros(mask.shape, dtype="uint8")
-            cv.drawContours(mask, [poly], 0, color=(255,), thickness=cv.FILLED)
-            masks.append(mask)
 
         boxes = BoundingBoxes(rects, format="XYWH", canvas_size=(mask.shape[0], mask.shape[1]))
 
@@ -57,9 +49,7 @@ if __name__ == "__main__":
                   "labels":   torch.tensor([1] * len(boxes), dtype=torch.int64),
                   "image_id": i,
                   "area":     torch.tensor([w * h for _, _, w, h in boxes], dtype=torch.int64),
-                  "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool),
-                  # "masks":    Mask(np.array(masks))
-                  }
+                  "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool)}
 
         filename = os.path.basename(path)
         data[filename] = target

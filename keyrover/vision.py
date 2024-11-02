@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from .effects import img_to_numpy, IMAGE_TYPE
+
 
 def extract_rects(img: np.ndarray) -> list[cv2.typing.Rect]:
     quads = []
@@ -16,6 +18,7 @@ def extract_rotated_rects(img: np.ndarray) -> list[cv2.typing.MatLike]:
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
         q = cv2.minAreaRect(c)
         q = cv2.boxPoints(q)
+        q = np.intp(q)
         quads.append(q)
 
     return quads
@@ -47,8 +50,11 @@ def extract_polygons(img: np.ndarray, epsilon=0.01) -> list[cv2.typing.MatLike]:
     return poly
 
 
-def crop_rect(img: np.ndarray, rect: np.ndarray) -> np.ndarray:
-    width, height = int(rect[1][0]), int(rect[1][1])
+def crop_rect(img, rect: np.ndarray) -> np.ndarray:
+    img = img_to_numpy(img)
+
+    width = int(((rect[0, 0] - rect[1, 0]) ** 2 + (rect[0, 1] - rect[1, 1]) ** 2) ** 0.5)
+    height = int(((rect[2, 0] - rect[1, 0]) ** 2 + (rect[2, 1] - rect[1, 1]) ** 2) ** 0.5)
 
     src_pts = rect.astype("float32")
     dst_pts = np.array([[0, height - 1], [0, 0], [width - 1, 0], [width - 1, height - 1]], dtype="float32")
