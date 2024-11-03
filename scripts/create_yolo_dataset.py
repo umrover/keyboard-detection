@@ -56,6 +56,8 @@ if __name__ == "__main__":
 
         if not os.path.isfile(f"{SEGMENTATION_DATASET}/{frame}"):
             frame = frame.removesuffix("png") + "jpg"
+        if not os.path.isfile(f"{SEGMENTATION_DATASET}/{frame}"):
+            continue
 
         shutil.copy(f"{SEGMENTATION_DATASET}/{frame}", f"{YOLO_DATASET}/{folder}/images/{i}.jpg")
         with open(f"{YOLO_DATASET}/{folder}/labels/{i}.txt", "w") as file:

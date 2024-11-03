@@ -1,4 +1,4 @@
-from typing import overload
+from typing import overload, Sequence
 from functools import reduce
 
 import numpy as np
@@ -70,4 +70,12 @@ def get_median_factors(n: int) -> tuple[int, int]:
     return f[len(f) // 2], f[len(f) // 2]
 
 
-__all__ = ["quad_area", "aspect_ratio", "factors", "get_median_factors"]
+def median_filter(objects: Sequence, statistic: np.ndarray, threshold: float = -0.5):
+    deviation = statistic - np.median(statistic)
+    median = np.median(statistic)
+    statistic = deviation / median if median else np.zeros(len(deviation))
+
+    return [obj for s, obj in zip(statistic, objects) if s > threshold]
+
+
+__all__ = ["quad_area", "aspect_ratio", "factors", "get_median_factors", "median_filter"]

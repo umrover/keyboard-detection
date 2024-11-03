@@ -10,6 +10,7 @@ lightning_logs
 wandb
 runs
 models/yolo
+models/yolo-multiclass
 **.pt
 **.ckpt
 

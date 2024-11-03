@@ -4,6 +4,8 @@ import numpy as np
 from PIL import Image
 import cv2
 
+from scipy.spatial import cKDTree
+
 
 ImageType = np.ndarray | Image.Image | torch.Tensor
 
@@ -48,4 +50,16 @@ def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Ten
     raise ValueError(f"Only np.ndarray or torch.Tensor are supported, not {type(img)}")
 
 
-__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "ImageType", "Image", "cv2"]
+def binarize_mask(image: Image.Image) -> np.ndarray:
+    binary = np.array(image.convert("L"))
+    return (binary > 1).astype("uint8")
+
+
+def to_palette(image: ImageType, palette: np.ndarray) -> np.ndarray:
+    image = img_to_numpy(image)
+    indices = cKDTree(palette).query(image, k=1)[1]
+    return palette[indices]
+
+
+__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "binarize_mask",
+           "ImageType", "Image", "cv2"]

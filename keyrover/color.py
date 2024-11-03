@@ -152,4 +152,15 @@ def random_grey(lims: tuple[int, int] = (0, 255),
     return ColorRGB(c, c, c, random.uniform(*alpha_lims))
 
 
-__all__ = ["colorsys", "gradient_image", "random_hsv", "random_grey"]
+def image_median_color(image: np.ndarray, ignore_black: bool = True) -> tuple[int, int, int] | None:
+    image = np.vstack(image)
+
+    if ignore_black:
+        image = image[(image != 0).any(axis=-1)]
+
+    if image.size == 0:
+        return None
+    return np.median(image, axis=0)
+
+
+__all__ = ["colorsys", "gradient_image", "random_hsv", "random_grey", "image_median_color"]
