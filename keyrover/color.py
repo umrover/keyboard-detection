@@ -1,6 +1,7 @@
 from typing import Sequence
 
 from PIL import Image
+import numpy as np
 
 import math
 import random

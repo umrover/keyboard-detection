@@ -1,77 +1,73 @@
-import os
 import glob
 import pickle
-import pprint
 
 from tqdm import tqdm
+from multiprocessing import Pool
 
-from PIL import Image
 import numpy as np
 
 import torch
 from torchvision.tv_tensors import BoundingBoxes
 
+from keyrover.datasets.multiclass_dataset import *
 from keyrover.vision import extract_rects
-from keyrover import RAW_MASKS, RAW_DATASET
+from keyrover.math import median_filter
+from keyrover.color import image_median_color
+from keyrover.image import to_palette
+from keyrover import *
 
+
+def get_masks(path: str) -> tuple[np.ndarray, np.ndarray]:
+    image = Image.open(path)
+    mask = np.array(image.convert("RGB"))
+    binary = binarize_mask(image)
+
+    return binary, mask
+
+
+def filtered_key_regions(mask: np.ndarray) -> list[np.ndarray]:
+    rects = extract_rects(mask)
+    areas = np.array([rect[-1] * rect[-2] for rect in rects])
+    return median_filter(rects, statistic=areas)
+
+
+def get_region_color(mask: np.ndarray, rect: np.ndarray) -> tuple[int, ...] | None:
+    x, y, w, h = rect
+    crop = mask[y:y + h, x:x + w]
+
+    return image_median_color(crop)
+
+
+def get_bbox_data(path: str) -> dict:
+    binary, mask = get_masks(path)
+
+    palette = np.array([key_to_color(i) for i in range(100)])
+    mask = to_palette(mask, palette)
+
+    rects = filtered_key_regions(binary)
+    colors = (c for rect in rects if (c := get_region_color(mask, rect)) is not None)
+    labels = list(map(color_to_key, colors))
+
+    boxes = BoundingBoxes(rects, format="XYWH", canvas_size=(binary.shape[0], binary.shape[1]))
+
+    return {"boxes":    boxes,
+            "labels":   torch.tensor(labels, dtype=torch.int64),
+            "area":     torch.tensor([w * h for _, _, w, h in boxes], dtype=torch.int64),
+            "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool)}
+
+
+RAW_MASKS = "blender/masks"
 
 if __name__ == "__main__":
-    data = {}
     paths = glob.glob(f"{RAW_MASKS}/*.png")
+    with Pool() as p:
+        target_data = list(tqdm(p.imap(get_bbox_data, paths), total=len(paths)))
 
-    OUTLIER_THRESHOLD = -0.5
-
-    colors = {}
-
-    filename = ""
-    for i, path in enumerate(tqdm(paths)):
-        image = Image.open(path).convert("RGB")
-
-        binary = (np.array(image.convert("L")) > 1).astype("uint8")
-        classes = np.array(image)
-
-        rects = extract_rects(binary)
-        areas = np.array(list(map(lambda rect: rect[-1] * rect[-2], rects)))
-
-        # outlier filtering
-        d = areas - np.median(areas)
-        mdev = np.median(areas)
-        s = d / mdev if mdev else np.zeros(len(d))
-
-        rects = zip(s, rects)
-        rects = list(filter(lambda rect: rect[0] > OUTLIER_THRESHOLD, rects))
-
-        if len(rects) == 0:
-            continue
-
-        _, rects = zip(*rects)
-
-        labels = []
-
-        for x, y, w, h in rects:
-            crop = classes[y:y + h, x:x + w]
-            binary_crop = binary[y:y + h, x:x + w]
-
-            crop = np.vstack(crop)
-            crop = crop[binary_crop.flatten() == 1]
-
-            color = tuple(np.quantile(crop, 0.75, axis=0))
-            if color not in colors:
-                colors[color] = len(colors) + 1
-
-            labels.append(colors[color])
-
-        boxes = BoundingBoxes(rects, format="XYWH", canvas_size=(binary.shape[0], binary.shape[1]))
-
-        target = {"boxes":    boxes,
-                  "labels":   torch.tensor(labels, dtype=torch.int64),
-                  "image_id": i,
-                  "area":     torch.tensor([w * h for _, _, w, h in boxes], dtype=torch.int64),
-                  "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool)}
-
+    data = {}
+    for i, (path, target) in enumerate(zip(paths, target_data)):
         filename = os.path.basename(path)
+        target["image_id"] = i
         data[filename] = target
 
-    pprint.pprint(data[filename])
     with open(f"{RAW_DATASET}/multiclass-regions.pkl", "wb") as file:
         pickle.dump(data, file)
