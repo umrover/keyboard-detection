@@ -188,7 +188,8 @@ def plot_yolo(results,
 
     for box in results.boxes:
         x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
-        draw_textbox(img, (x1, y1), (x2, y2), f"{int(100 * box.conf)}%", scale=scale)
+        cls = results.names[int(box.cls)]
+        draw_textbox(img, (x1, y1), (x2, y2), f"{cls} {int(100 * box.conf)}%", scale=scale)
 
     if plot:
         plt.figure(figsize=(10, 10))
