@@ -56,8 +56,6 @@ def get_bbox_data(path: str) -> dict:
             "iscrowd":  torch.tensor([False] * len(boxes), dtype=torch.bool)}
 
 
-RAW_MASKS = "blender/masks"
-
 if __name__ == "__main__":
     paths = glob.glob(f"{RAW_MASKS}/*.png")
     with Pool() as p:

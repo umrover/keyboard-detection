@@ -145,7 +145,7 @@ def create_random_image(path):
 
 
 if __name__ == "__main__":
-    DATASET_VERSION = 3
+    DATASET_VERSION = 4
 
     shutil.rmtree(SEGMENTATION_DATASET)
     os.mkdir(SEGMENTATION_DATASET)
