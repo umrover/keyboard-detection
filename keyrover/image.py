@@ -45,7 +45,7 @@ def reorder_image_axes(img: ImageType) -> np.ndarray:
 
     if img.shape[0] == 2:
         r, g = img
-        black = np.zeros(r.shape, dtype=np.uint8)
+        black = np.zeros(r.shape, dtype=img.dtype)
         return cv2.merge([r, black, g])
 
     return img.transpose(1, 2, 0)
