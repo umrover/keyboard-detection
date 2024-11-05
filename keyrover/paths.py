@@ -8,6 +8,7 @@ RESIZED_BACKGROUNDS: Final[str] = f"{DATASETS}/bg-20k-resized"
 
 RAW_DATASET: Final[str] = f"{DATASETS}/raw"
 RAW_RENDERS: Final[str] = f"{RAW_DATASET}/renders"
+RAW_TEXCOORDS: Final[str] = f"{RAW_DATASET}/texcoords"
 RAW_MASKS: Final[str] = f"{RAW_DATASET}/masks"
 
 YOLO_BINARY_DATASET: Final[str] = f"{DATASETS}/yolo"

@@ -31,7 +31,9 @@ def img_to_PIL(img: ImageType) -> Image.Image:
     raise TypeError("Can't convert unknown type image to PIL Image")
 
 
-def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
+def reorder_image_axes(img: ImageType) -> np.ndarray:
+    img = img_to_numpy(img)
+
     if len(img.shape) == 2:
         return img
 
@@ -41,13 +43,12 @@ def reorder_image_axes(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Ten
     if img.shape[-1] in {1, 3, 4}:
         return img
 
-    if isinstance(img, torch.Tensor):
-        return img.permute(1, 2, 0)
+    if img.shape[0] == 2:
+        r, g = img
+        black = np.zeros(r.shape, dtype=np.uint8)
+        return cv2.merge([r, black, g])
 
-    elif isinstance(img, np.ndarray):
-        return img.transpose(1, 2, 0)
-
-    raise ValueError(f"Only np.ndarray or torch.Tensor are supported, not {type(img)}")
+    return img.transpose(1, 2, 0)
 
 
 def binarize_mask(image: Image.Image) -> np.ndarray:
