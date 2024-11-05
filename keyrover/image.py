@@ -62,5 +62,5 @@ def to_palette(image: ImageType, palette: np.ndarray) -> np.ndarray:
     return palette[indices]
 
 
-__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "binarize_mask",
+__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "binarize_mask", "to_palette",
            "ImageType", "Image", "cv2"]

@@ -159,7 +159,7 @@ def draw_textbox(img: ImageType,
                  font=cv2.FONT_HERSHEY_TRIPLEX,
                  size: float = 0.3,
                  thickness: float = 0.5,
-                 draw_text: bool = True):
+                 draw_text: bool = True) -> np.array:
     """
     Plots a box with text above it
     """
@@ -183,7 +183,7 @@ def plot_yolo(results,
               scale: int = 4,
               plot: bool = True,
               draw_text: bool = True,
-              **kwargs):
+              **kwargs) -> np.ndarray | None:
     """
     Plots a YOLO results object.
     """
