@@ -1,23 +1,22 @@
 import os.path
 import pickle
-from typing import Iterable, Sequence, Any
+from typing import Iterable, Any
 
 import cv2 as cv
 import torch
 
 from tqdm.notebook import tqdm
 
-from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
-from keyrover.ml import identity
 from keyrover import Image, RAW_DATASET, reorder_image_axes, imshow
+from .abstract import KeyboardDatasetBase
 
 
-class KeyboardBBoxDataset(Dataset):
+class KeyboardBBoxDataset(KeyboardDatasetBase):
     def __init__(self, paths: Iterable[str]):
+        super().__init__()
 
-        self._images = []
         self._targets = []
 
         with open(f"{RAW_DATASET}/regions.pkl", "rb") as file:
@@ -34,27 +33,6 @@ class KeyboardBBoxDataset(Dataset):
             img = Image.open(path)
             self._images.append(f(img))
             self._targets.append(to_xyxy(targets[os.path.basename(path)]))
-
-        self._transforms = identity
-        self._augmentations = identity
-
-    def set_transforms(self, val: Sequence[transforms.Transform]) -> None:
-        self._transforms = transforms.Compose(val)
-
-    def set_augmentations(self, val: Sequence[transforms.Transform]) -> None:
-        self._augmentations = transforms.Compose(val)
-
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, dict[str, Any]]:
-        img = self._images[idx]
-        target = self._targets[idx]
-
-        img, target = self._transforms(img, target)
-        img = self._augmentations(img)
-
-        return img, target
-
-    def __len__(self) -> int:
-        return len(self._images)
 
     def show(self, idx: int) -> None:
         img, target = self[idx]
