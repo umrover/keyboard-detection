@@ -10,7 +10,9 @@ class KeyboardDataset(KeyboardDatasetBase):
     def __init__(self, paths: Sequence[torch.Tensor], _transforms=()):
         super().__init__()
         self._images = paths
-        self._transforms = transforms.Compose(_transforms)
+
+        if len(_transforms) > 0:
+            self._transforms = transforms.Compose(_transforms)
 
     def __getitem__(self, idx) -> torch.Tensor:
         img = self._images[idx]

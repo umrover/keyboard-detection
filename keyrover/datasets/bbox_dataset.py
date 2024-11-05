@@ -1,6 +1,6 @@
 import os.path
 import pickle
-from typing import Iterable, Any
+from typing import Iterable
 
 import cv2 as cv
 import torch
