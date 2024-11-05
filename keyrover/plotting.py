@@ -158,7 +158,8 @@ def draw_textbox(img: ImageType,
                  scale: int = 5,
                  font=cv2.FONT_HERSHEY_TRIPLEX,
                  size: float = 0.3,
-                 thickness: float = 0.5) -> np.ndarray:
+                 thickness: float = 0.5,
+                 draw_text: bool = True):
     """
     Plots a box with text above it
     """
@@ -170,16 +171,19 @@ def draw_textbox(img: ImageType,
 
     cv2.rectangle(img, p1, p2, color, thickness=scale * 2)
 
-    (w, h), _ = cv2.getTextSize(text, font, size, thickness)
-    img = cv2.rectangle(img, (x1, y1 - h - scale * 2), (x1 + w + scale * 3, y1), color, -1)
-    img = cv2.putText(img, text, (x1 + scale, y1 - scale), font, size, (255, 255, 255), thickness, cv2.LINE_AA)
+    if draw_text:
+        (w, h), _ = cv2.getTextSize(text, font, size, thickness)
+        img = cv2.rectangle(img, (x1, y1 - h - scale * 2), (x1 + w + scale * 3, y1), color, -1)
+        img = cv2.putText(img, text, (x1 + scale, y1 - scale), font, size, (255, 255, 255), thickness, cv2.LINE_AA)
 
     return img
 
 
 def plot_yolo(results,
               scale: int = 4,
-              plot: bool = True) -> np.ndarray | None:
+              plot: bool = True,
+              draw_text: bool = True,
+              **kwargs):
     """
     Plots a YOLO results object.
     """
@@ -189,10 +193,11 @@ def plot_yolo(results,
     for box in results.boxes:
         x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
         cls = results.names[int(box.cls)]
-        draw_textbox(img, (x1, y1), (x2, y2), f"{cls} {int(100 * box.conf)}%", scale=scale)
+        draw_textbox(img, (x1, y1), (x2, y2), f"{cls} {int(100 * box.conf)}%", scale=scale,
+                     draw_text=draw_text)
 
     if plot:
-        plt.figure(figsize=(10, 10))
+        plt.figure(**kwargs)
         imshow(img, ax=plt.gca())
     else:
         return img
