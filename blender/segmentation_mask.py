@@ -9,38 +9,22 @@ blender_utils = bpy.data.texts["blender_utils"].as_module()
 
 
 SET_MASK = True
+KEYBOARD_MASK = True
 
-keyboard = 2
+KEYBOARD = 2
 
-TOTAL_KEYBOARDS = 4
-K = 2
+TOTAL_KEYBOARDS = 3
+
 
 # SCRIPT BEGINS HERE
 # --------------------------------------------
 
 
-for i in range(TOTAL_KEYBOARDS):
-    objs = bpy.data.collections[f"Keyboard {i + 1}"]
-    blender_utils.hide_collection(objs, True)
-
-keyboard = bpy.data.collections[f"Keyboard {keyboard}"]
-orientation = blender_utils.get_child_by_name(keyboard, "Orientation")
-keys = blender_utils.get_children_by_name(keyboard, "Key")
-keys += blender_utils.get_children_by_name(keyboard, "Numpad")
-
-blender_utils.hide_collection(keyboard, False)
-blender_utils.hide_collection(keyboard, SET_MASK, exclude=keys)
-
-orientation.hide_set(True)
-orientation.hide_render = True
-
-
 def get_ith_color(i):
-    r = K * i
-    g = K * (r // 255)
-    b = K * (g // 255)
-
-    return r % 255, g % 255, b % 255
+    r = i % 12
+    g = (i // 12) % 12
+    b = (i // 144) % 12
+    return r * 21, b * 21, g * 21
 
 
 def create_mask_material(i):
@@ -70,25 +54,63 @@ def create_mask_material(i):
     return mat
 
 
-black = create_mask_material(0)
+def set_key_mask(i, set_mask, hide=False):
+    keyboard = bpy.data.collections[f"Keyboard {i}"]
+    keys = blender_utils.get_children_by_name(keyboard, "Key")
+    keys += blender_utils.get_children_by_name(keyboard, "Numpad")
 
-orientation = blender_utils.get_plane_normal(orientation)
+    orientation = bpy.data.objects["Orientation"]
+    orientation = blender_utils.get_plane_normal(orientation)
 
-for i, ob in enumerate(keys):
-    assert i <= 255
-    print(ob)
+    if hide:
+        blender_utils.hide_collection(keyboard, True)
+    else:
+        blender_utils.hide_collection(keyboard, False)
+        blender_utils.hide_collection(keyboard, set_mask, exclude=keys)
 
-    mat = create_mask_material(i + 1)
+    for i, ob in enumerate(keys):
+        assert i <= 255
 
-    blender_utils.set_obj_material(ob, 1, black)
-    blender_utils.set_obj_material(ob, 2, mat)
+        mat = create_mask_material(i + 1)
 
-    for face in ob.data.polygons:
-        if not SET_MASK:
-            face.material_index = 0
+        blender_utils.set_obj_material(ob, 1, black)
+        blender_utils.set_obj_material(ob, 2, mat)
+
+        for face in ob.data.polygons:
+            if not set_mask:
+                face.material_index = 0
+                continue
+
+            if abs(face.normal.dot(orientation) - 1) < 0.1:
+                face.material_index = 2
+            else:
+                face.material_index = 1
+
+
+def set_keyboard_mask(i, set_mask, hide=False):
+    keyboard = bpy.data.collections[f"Keyboard {i}"]
+
+    blender_utils.hide_collection(keyboard, hide)
+    material = bpy.data.materials.get("Mask")
+
+    for ob in keyboard.all_objects:
+        if not hasattr(ob.data, "polygons"):
             continue
 
-        if abs(face.normal.dot(orientation) - 1) < 0.1:
-            face.material_index = 2
+        for face in ob.data.polygons:
+            if not set_mask:
+                face.material_index = 0
+                continue
+
+            blender_utils.set_obj_material(ob, 4, material)
+            face.material_index = 3
+
+
+black = create_mask_material(0)
+
+if __name__ == "__main__":
+    for i in range(1, TOTAL_KEYBOARDS + 1):
+        if KEYBOARD_MASK:
+            set_keyboard_mask(i, SET_MASK, i != KEYBOARD)
         else:
-            face.material_index = 1
+            set_key_mask(i, SET_MASK, i != KEYBOARD)
