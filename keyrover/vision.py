@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+import ultralytics.engine.results
+
 from .image import img_to_numpy, ImageType
 
 
@@ -59,6 +61,13 @@ def extract_polygons(img: ImageType, epsilon=0.01) -> list[cv2.typing.MatLike]:
 
 
 def crop_rect(img: ImageType, rect: np.ndarray) -> np.ndarray:
+    if isinstance(rect, ultralytics.engine.results.Boxes):
+        rect = rect.xyxy[0]
+
+    if len(rect) == 4 and len(rect.shape) == 1:  # (x1, y1, x2, y2) format
+        x1, y1, x2, y2 = rect
+        return crop_rect(img, np.array([(x1, y1), (x2, y1), (x2, y2), (x1, y2)], dtype="int"))
+
     img = img_to_numpy(img, convert_bool=True)
 
     width = int(((rect[0, 0] - rect[1, 0]) ** 2 + (rect[0, 1] - rect[1, 1]) ** 2) ** 0.5)
