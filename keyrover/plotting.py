@@ -5,6 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import cv2
+from ultralytics.engine.results import Boxes, Results
 
 from .image import img_to_numpy, ImageType, reorder_image_axes
 from .math import get_median_factors
@@ -179,22 +180,25 @@ def draw_textbox(img: ImageType,
     return img
 
 
-def plot_yolo(results,
-              scale: int = 4,
-              plot: bool = True,
-              draw_text: bool = True,
-              **kwargs) -> np.ndarray | None:
+def plot_predictions(img: np.ndarray,
+                     boxes: list[Boxes],
+                     labels: list[str],
+                     scale: int = 4,
+                     plot: bool = True,
+                     draw_text: bool = True,
+                     font_size: float = 0.2,
+                     line_width: float = 0.05,
+                     **kwargs) -> np.ndarray | None:
     """
-    Plots a YOLO results object.
+    Plots a YOLO boxes object with labels
     """
-    size = results.orig_img.shape
-    img = cv2.resize(results.orig_img, (scale * size[1], scale * size[0]))
+    size = img.shape
+    img = cv2.resize(img, (scale * size[1], scale * size[0]))
 
-    for box in results.boxes:
+    for cls, box in zip(labels, boxes):
         x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
-        cls = results.names[int(box.cls)]
-        draw_textbox(img, (x1, y1), (x2, y2), f"{cls} {int(100 * box.conf)}%", scale=scale,
-                     draw_text=draw_text)
+        draw_textbox(img, (x1, y1), (x2, y2), str(cls),
+                     scale=scale, draw_text=draw_text, size=font_size, thickness=line_width)
 
     if plot:
         plt.figure(**kwargs)
@@ -203,5 +207,9 @@ def plot_yolo(results,
         return img
 
 
-__all__ = ["imshow", "imhist", "show_images", "draw_textbox", "plot_yolo", "gridplot",
-           "plt"]
+def plot_yolo(results: Results, **kwargs) -> np.ndarray | None:
+    return plot_predictions(results.orig_img, results.boxes,
+                            [f"{box.cls} {box.conf}%" for box in results.boxes], **kwargs)
+
+
+__all__ = ["imshow", "imhist", "show_images", "draw_textbox", "plot_yolo", "plot_predictions", "gridplot", "plt"]
