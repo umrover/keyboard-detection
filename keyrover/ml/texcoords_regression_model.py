@@ -1,6 +1,7 @@
 from typing import Literal
 
 import numpy as np
+import cv2
 
 import torch
 import lightning as pl
@@ -35,8 +36,9 @@ class TexCoordsRegressionModel(pl.LightningModule):
             pred = self(image).cpu().numpy()
 
         if len(pred) == 1:
-            return pred[0,]
-        return pred
+            pred = pred[0,]
+
+        return (pred + 1) / 2  # Tanh outputs [-1, 1], we want [0, 1]
 
     def _step(self, batch: tuple[torch.Tensor, torch.Tensor], stage: str) -> float:
         image, truth = batch
