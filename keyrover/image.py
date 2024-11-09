@@ -40,13 +40,8 @@ def reorder_image_axes(img: ImageType) -> np.ndarray:
     if len(img.shape) != 3:
         raise ValueError(f"reorder_image_axes() requires images with 2 or 3 dimensions, not {img.shape}")
 
-    if img.shape[-1] in {1, 3, 4}:
+    if img.shape[-1] <= 4:
         return img
-
-    if img.shape[0] == 2:
-        r, g = img
-        black = np.zeros(r.shape, dtype=img.dtype)
-        return cv2.merge([r, black, g])
 
     return img.transpose(1, 2, 0)
 
