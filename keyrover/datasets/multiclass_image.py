@@ -89,7 +89,7 @@ class MulticlassKeyboardImage:
         img = np.array(self.image)
 
         for (x, y, w, h), label in zip(self.rects, self.labels):
-            img = draw_textbox(img, (x, y), (x + w, y + h), text=label, scale=1, size=0.3)
+            img = draw_textbox(img, (x, y), (x + w, y + h), text=label, scale=1, font_size=0.3)
 
         imshow(img)
 

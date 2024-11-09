@@ -1,4 +1,4 @@
-from typing import Sequence, Literal
+from typing import Sequence, Literal, Any, Iterable
 
 import torch
 import numpy as np
@@ -41,6 +41,11 @@ def _imshow(img: ImageType,
     # in some cases, the channel comes as the first axis, i.e. (c, w, h)
     # so we reorder to get (w, h, c)
     img = reorder_image_axes(img)
+
+    if img.shape[-1] == 2:
+        r, g = cv2.split(img)
+        black = np.zeros(r.shape, dtype=img.dtype)
+        img = cv2.merge([r, black, g])
 
     ax.axis("off")
     ax.imshow(img, interpolation="nearest")
@@ -158,50 +163,52 @@ def draw_textbox(img: ImageType,
                  color: tuple[int, int, int] = (230, 55, 107),
                  scale: int = 5,
                  font=cv2.FONT_HERSHEY_TRIPLEX,
-                 size: float = 0.3,
+                 font_size: float = 0.3,
                  thickness: float = 0.5,
-                 draw_text: bool = True) -> np.array:
+                 line_width: int = 1,
+                 draw_text: bool = True,
+                 **kwargs) -> np.array:
     """
     Plots a box with text above it
     """
     img = img_to_numpy(img)
 
     x1, y1 = p1
-    size *= scale
+    font_size *= scale
     thickness = int(scale * thickness)
 
     cv2.rectangle(img, p1, p2, color, thickness=scale * 2)
 
     if draw_text:
-        (w, h), _ = cv2.getTextSize(text, font, size, thickness)
-        img = cv2.rectangle(img, (x1, y1 - h - scale * 2), (x1 + w + scale * 3, y1), color, -1)
-        img = cv2.putText(img, text, (x1 + scale, y1 - scale), font, size, (255, 255, 255), thickness, cv2.LINE_AA)
+        (w, h), _ = cv2.getTextSize(text, font, font_size, thickness)
+        img = cv2.rectangle(img, (x1, y1 - h - scale * 2), (x1 + w + scale * 3, y1), color, line_width)
+        img = cv2.putText(img, text, (x1 + scale, y1 - scale), font, font_size, (255, 255, 255), thickness, cv2.LINE_AA)
 
     return img
 
 
 def plot_predictions(img: np.ndarray,
                      boxes: list[Boxes],
-                     labels: list[str],
+                     labels: Iterable,
                      scale: int = 4,
                      plot: bool = True,
                      draw_text: bool = True,
-                     font_size: float = 0.2,
-                     line_width: float = 0.05,
+                     fig_kwargs: dict[str, Any] = {},
                      **kwargs) -> np.ndarray | None:
     """
     Plots a YOLO boxes object with labels
     """
+    if fig_kwargs is None:
+        fig_kwargs = {}
     size = img.shape
     img = cv2.resize(img, (scale * size[1], scale * size[0]))
 
     for cls, box in zip(labels, boxes):
         x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
-        draw_textbox(img, (x1, y1), (x2, y2), str(cls),
-                     scale=scale, draw_text=draw_text, size=font_size, thickness=line_width)
+        draw_textbox(img, (x1, y1), (x2, y2), str(cls), draw_text=draw_text, **kwargs)
 
     if plot:
-        plt.figure(**kwargs)
+        plt.figure(**fig_kwargs)
         imshow(img, ax=plt.gca())
     else:
         return img
