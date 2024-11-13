@@ -17,12 +17,12 @@ class TexCoordKeyboardImage(MulticlassKeyboardImage):
     def show(self) -> None:
         imshow(self.image, self.texcoords)
 
-    def extract_key_texcoords(self) -> None:
+    def extract_key_texcoords(self, reduce: str = "mean") -> None:
         self.key_texcoords = {"U": [], "V": []}
 
         for label, rect in zip(self.labels, self.rects):
             crop = self.crop(*rect, attr="texcoords")
-            r, g, _ = image_color(crop, reduce="mean")
+            r, g, _ = image_color(crop, reduce=reduce)
 
             self.key_texcoords["U"].append(r)
             self.key_texcoords["V"].append(g)

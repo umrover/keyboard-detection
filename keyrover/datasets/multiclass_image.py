@@ -15,10 +15,10 @@ id_to_key = {
 
     14: "up", 15: "left", 16: "down", 17: "right",
 
-    18: "delete", 19: "end", 20: "pg down", 21: "insert", 22: "home", 23: "pg up", 24: "print", 25: "lock", 26: "pause",
+    18: "del", 19: "end", 20: "pg dn", 21: "insert", 22: "home", 23: "pg up", 24: "print", 25: "lock", 26: "pause",
 
-    27: "backspace", 28: "rshift", 29: "rcontrol",
-    30: "menu", 31: "fn", 32: "ralt", 33: "lalt", 34: "windows", 35: "lcontrol", 36: "lshift", 85: "caps lock", 37: "ltab",
+    27: "back", 28: "rshift", 29: "rctrl",
+    30: "menu", 31: "fn", 32: "ralt", 33: "lalt", 34: "windows", 35: "lctrl", 36: "lshift", 85: "caps", 37: "ltab",
     38: "esc",
 
     47: "f1", 48: "f2", 49: "f3", 50: "f4", 43: "f5", 44: "f6", 45: "f7", 46: "f8",
