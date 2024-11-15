@@ -36,9 +36,8 @@ class TexCoordsRegressionModel(pl.LightningModule):
             pred = self(image).cpu().numpy()
 
         if len(pred) == 1:
-            pred = pred[0,]
-
-        return (pred + 1) / 2  # Tanh outputs [-1, 1], we want [0, 1]
+            return pred[0,]
+        return pred
 
     def _step(self, batch: tuple[torch.Tensor, torch.Tensor], stage: str) -> float:
         image, truth = batch

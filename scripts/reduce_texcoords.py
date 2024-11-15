@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 
 from keyrover.datasets import id_to_key
+from keyrover.color import Palette
 from keyrover import *
 
 
@@ -56,3 +57,16 @@ if __name__ == "__main__":
     with open(f"{RAW_TEXCOORDS}/key_texcoords_all.bin", "wb") as file:
         pickle.dump(U, file)
         pickle.dump(V, file)
+
+    # create color palette
+    colors = []
+    classes = []
+
+    for (cls, u), (_, v) in zip(U_means.items(), V_means.items()):
+        colors.append((u, v))
+        classes.append(cls)
+
+    palette = Palette(colors, classes)
+
+    with open(f"{RAW_TEXCOORDS}/key_texcoords_palette.bin", "wb") as file:
+        pickle.dump(palette, file)
