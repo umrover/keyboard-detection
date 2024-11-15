@@ -5,6 +5,7 @@ datasets
 blender/assets
 blender/renders
 blender/masks
+blender/texcoords
 
 lightning_logs
 wandb
