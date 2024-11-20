@@ -18,7 +18,7 @@ from .abstract import KeyboardDatasetBase
 class KeyboardCameraTransformDataset(KeyboardDatasetBase):
     _to_image = transforms.ToImage()
 
-    with open("blender/camera_data.bin", "rb") as f:
+    with open("blender/normalized_camera_data.bin", "rb") as f:
         camera_data = pickle.load(f)
 
     def __init__(self, paths: Sequence[str], size: tuple[float, float] = None):
@@ -40,10 +40,8 @@ class KeyboardCameraTransformDataset(KeyboardDatasetBase):
         img = self._resize(self._to_image(img))
 
         frame = int(os.path.basename(path).split("_")[1]) - 1
-        location = self.camera_data["location"][frame]
-        rotation = self.camera_data["rotation"][frame]
+        target = self.camera_data[frame]
 
-        target = torch.tensor([*rotation, *location], dtype=torch.float32)
         return img, target
 
 
