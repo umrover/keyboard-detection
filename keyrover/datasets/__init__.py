@@ -4,5 +4,6 @@ from .texcoords_dataset import *
 
 from .multiclass_image import *
 from .texcoord_image import *
+from .camera_transform_dataset import *
 
 from .util import *
