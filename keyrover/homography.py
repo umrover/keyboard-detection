@@ -24,30 +24,30 @@ def alpha_rotation_matrix(alpha):
 
 def beta_rotation_matrix(beta):
     """
-    Ry = [[cos(β), 0, sin(β)],
+    Ry = [[cos(β), 0, -sin(β)],
           [0, 1, 0],
-          [-sin(β), 0, cos(β)]]
+          [sin(β), 0, cos(β)]]
     """
     cos_beta = torch.cos(beta)
     sin_beta = torch.sin(beta)
 
-    Ry1 = torch.stack([cos_beta, zeros, sin_beta], dim=1)
+    Ry1 = torch.stack([cos_beta, zeros, -sin_beta], dim=1)
     Ry2 = torch.stack([zeros, ones, zeros], dim=1)
-    Ry3 = torch.stack([-sin_beta, zeros, cos_beta], dim=1)
+    Ry3 = torch.stack([sin_beta, zeros, cos_beta], dim=1)
     return torch.stack([Ry1, Ry2, Ry3], dim=1)
 
 
 def gamma_rotation_matrix(gamma):
     """
-    Rz = [[cos(γ), -sin(γ), 0],
-          [sin(γ),  cos(γ), 0],
+    Rz = [[cos(γ), sin(γ), 0],
+          [-sin(γ),  cos(γ), 0],
           [0,  0, 1]]
     """
     cos_gamma = torch.cos(gamma)
     sin_gamma = torch.sin(gamma)
 
-    Rz1 = torch.stack([cos_gamma, -sin_gamma, zeros], dim=1)
-    Rz2 = torch.stack([sin_gamma, cos_gamma, zeros], dim=1)
+    Rz1 = torch.stack([cos_gamma, sin_gamma, zeros], dim=1)
+    Rz2 = torch.stack([-sin_gamma, cos_gamma, zeros], dim=1)
     Rz3 = torch.stack([zeros, zeros, ones], dim=1)
     return torch.stack([Rz1, Rz2, Rz3], dim=1)
 
@@ -60,7 +60,7 @@ def rotation_matrix(alpha, beta, gamma):
     Ry = beta_rotation_matrix(beta)
     Rz = gamma_rotation_matrix(gamma)
 
-    return Rz @ Ry @ Rx
+    return Rx @ Ry @ Rz
 
 
 def extrinsic_matrix(alpha, beta, gamma, position):
@@ -70,8 +70,13 @@ def extrinsic_matrix(alpha, beta, gamma, position):
     E = [R | -R @ position]
     """
     R = rotation_matrix(alpha, beta, gamma)
+
     position = position.unsqueeze(axis=-1)
-    return torch.concat([R, R @ position], dim=-1)
+    T = -R @ position
+
+    R = R_to_Blender @ R
+    T = R_to_Blender @ T
+    return torch.concat([R, T], dim=-1)
 
 
 def intrinsic_matrix(fx, fy, cx, cy):
@@ -167,16 +172,13 @@ def xy_to_uv_matrix(p1, p2, p3, p4):
 
     """
     C = B @ A_inv
-    [x', y', z'] = C @ [x, y, 1]
-    result = [x' / z', y' / z']
-
-    only keep values between 0 & 255, zero-out the rest
     """
     return B @ A_inv
 
 
 def prediction_to_texture_coordinates(pred):
-    C = xy_to_uv_matrix(*prediction_to_corners(pred))
+    corners = prediction_to_corners(pred)
+    C = xy_to_uv_matrix(*corners)
 
     """
     [u, v, z] = C @ [x, y, 1]
@@ -223,8 +225,8 @@ def xy_to_uv_change_of_basis_matrix():
 
 
 def color_coordinates_mesh():
-    x = np.linspace(0, 255, SIZE[0])
-    y = np.linspace(0, 255, SIZE[1])
+    x = np.linspace(0, 640, 320)
+    y = np.linspace(0, 480, 240)
     xx, yy = np.meshgrid(x, y)
     one = np.ones(xx.shape)
 
@@ -234,22 +236,26 @@ def color_coordinates_mesh():
 
 B = xy_to_uv_change_of_basis_matrix()
 
-FX = 190
-FY = 190
-K = torch.tensor([[FX, 0, FX / 2],
-                  [0, FY, FY / 2],
+FX = 888.889
+FY = 1000
+K = torch.tensor([[FX, 0, 320],
+                  [0, FY, 240],
                   [0, 0, 1]], dtype=torch.float32, device=device)
 
-width = 2.928
-height = 1
+R_to_Blender = torch.tensor([[1, 0, 0],
+                             [0, -1, 0],
+                             [0, 0, -1]], dtype=torch.float32, device=device)
+
+width = 2.7986
+height = 0.95583
 
 coordinates = color_coordinates_mesh()
 
 X = -0.21919
-Y = -0.0818
-Z = -0.13053
+Y = -0.081833
+Z = 0.13053
 
-P3 = torch.tensor([width + X, -height + Y, Z, 1], dtype=torch.float32, device=device)
-P2 = torch.tensor([width + X, height + Y, Z, 1], dtype=torch.float32, device=device)
-P1 = torch.tensor([-width + X, height + Y, Z, 1], dtype=torch.float32, device=device)
-P4 = torch.tensor([-width + X, -height + Y, Z, 1], dtype=torch.float32, device=device)
+P1 = torch.tensor([-width / 2 + X, -height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
+P2 = torch.tensor([width / 2 + X, -height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
+P3 = torch.tensor([width / 2 + X, height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
+P4 = torch.tensor([-width / 2 + X, height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
