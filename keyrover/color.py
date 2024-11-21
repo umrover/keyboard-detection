@@ -166,7 +166,7 @@ def image_color(image: np.ndarray, ignore_black: bool = True, reduce="median") -
 
 class Palette:
     def __init__(self, colors: Sequence, names: Sequence) -> None:
-        self.colors = np.array([colors])
+        self.colors = np.array(colors)
 
         self.colors_to_name = {}
         for c, name in zip(colors, names):
