@@ -103,8 +103,9 @@ def prediction_to_projection_matrix(pred):
     global ones, zeros
 
     batch_size = len(pred)
-    ones = torch.ones(batch_size, dtype=torch.float32, device=device)
-    zeros = torch.zeros(batch_size, dtype=torch.float32, device=device)
+    if len(ones) != batch_size:
+        ones = torch.ones(batch_size, dtype=torch.float32, device=device)
+        zeros = torch.zeros(batch_size, dtype=torch.float32, device=device)
 
     alpha = pred[:, 0]
     beta = pred[:, 1]
@@ -133,6 +134,8 @@ def prediction_to_corners(pred):
 
 
 def xy_to_uv_matrix(p1, p2, p3, p4):
+    global ones, zeros
+
     """
     M = [[x1, x2, x3],
          [y1, y2, y3],
@@ -142,6 +145,11 @@ def xy_to_uv_matrix(p1, p2, p3, p4):
     x2, y2 = p2
     x3, y3 = p3
     x4, y4 = p4
+
+    batch_size = len(x1)
+    if len(ones) != batch_size:
+        ones = torch.ones(batch_size, dtype=torch.float32, device=device)
+        zeros = torch.zeros(batch_size, dtype=torch.float32, device=device)
 
     M1 = torch.stack([x1, x2, x3], dim=1)
     M2 = torch.stack([y1, y2, y3], dim=1)
@@ -176,8 +184,7 @@ def xy_to_uv_matrix(p1, p2, p3, p4):
     return B @ A_inv
 
 
-def prediction_to_texture_coordinates(pred):
-    corners = prediction_to_corners(pred)
+def corners_to_texture_coordinates(corners):
     C = xy_to_uv_matrix(*corners)
 
     """
@@ -194,6 +201,11 @@ def prediction_to_texture_coordinates(pred):
     # reorder dimensions from (batch, y, x, channel) to (batch, channel, y, x)
     result = torch.einsum('byxc -> bcyx', result)
     return (result / 128) - 1
+
+
+def prediction_to_texture_coordinates(pred):
+    corners = prediction_to_corners(pred)
+    return corners_to_texture_coordinates(corners)
 
 
 def xy_to_uv_change_of_basis_matrix():
@@ -254,6 +266,9 @@ coordinates = color_coordinates_mesh()
 X = -0.21919
 Y = -0.081833
 Z = 0.13053
+
+ones = []
+zeros = []
 
 P1 = torch.tensor([-width / 2 + X, -height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
 P2 = torch.tensor([width / 2 + X, -height / 2 + Y, Z, 1], dtype=torch.float32, device=device)
