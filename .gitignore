@@ -17,3 +17,5 @@ models/yolo-multiclass
 
 !**.yaml
 !keyrover/datasets
+
+/scripts/countlines.py
