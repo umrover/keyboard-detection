@@ -175,10 +175,10 @@ def draw_textbox(img: ImageType, bbox: LabeledBBox, color: Vec3 = (230, 55, 107)
     """
 
     img = img_to_numpy(img)
-    cv2.rectangle(img, bbox.xywh, color=color, thickness=thickness)
+    cv2.rectangle(img, bbox.p1.astype("int"), bbox.p2.astype("int"), color=color, thickness=thickness)
 
     if draw_text:
-        img = cv2.putText(img, bbox.label, bbox.centre.astype("int"),
+        img = cv2.putText(img, bbox.label, bbox.p1.astype("int"),
                           font, font_size, (255, 255, 255), thickness, cv2.LINE_AA)
     return img
 

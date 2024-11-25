@@ -7,7 +7,10 @@ from keyrover.util import *
 
 
 def img_to_numpy(img: ImageType, convert_bool: bool = False) -> np.ndarray:
-    if isinstance(img, Image.Image):
+    if isinstance(img, (map, filter, zip)):
+        return np.array(tuple(img))
+
+    if isinstance(img, (Image.Image, tuple, list)):
         img = np.array(img)
 
     elif isinstance(img, torch.Tensor):

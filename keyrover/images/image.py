@@ -63,13 +63,13 @@ class KeyboardImage:
     def crop(self, bbox: BBox) -> KeyboardImage:
         ...
 
-    def crop(self, *args) -> KeyboardImage:
+    def crop(self, *args) -> np.array:
         if len(args) == 1:
             bbox = args[0]
             return self.crop(*bbox.p1, bbox.width, bbox.height)
 
         x, y, w, h = map(int, args)
-        return KeyboardImage(self._image[y:y + h, x:x + w])
+        return self._image[y:y + h, x:x + w]
 
     def show(self) -> None:
         imshow(self._image)
@@ -83,6 +83,9 @@ class KeyboardImage:
     shape = property(lambda self: self._shape)
     width = property(lambda self: self._shape[1])
     height = property(lambda self: self._shape[0])
+
+    size = property(lambda self: self._image.size)
+    dtype = property(lambda self: self._image.dtype)
 
 
 __all__ = ["KeyboardImage"]

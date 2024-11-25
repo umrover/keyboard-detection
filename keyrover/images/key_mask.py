@@ -51,27 +51,40 @@ class KeyMaskImage(KeyboardImage):
     def __init__(self, path: str) -> None:
         super().__init__(path)
 
-        self._image = to_palette(self._image, self.palette)
-
         self._bboxes: Final = self._extract_rects()
+        self._crops: Final = tuple(map(self.crop, self._bboxes))
+
         self._keys: Final = self._extract_keys()
 
-    def _extract_rects(self) -> list[BBox]:
+    def _extract_rects(self) -> tuple[BBox]:
         bboxes = []
 
         for contour in cv2.findContours(self.binarize(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
             cx, cy, width, height = cv2.boundingRect(contour)
-            bboxes.append(BBox((cx, cy), width, height))
+            bboxes.append(BBox((cx, cy), (cx + width, cy + height)))
 
         areas = map(lambda bbox: bbox.area, bboxes)
         return median_filter(bboxes, statistic=tuple(areas))
 
     def _extract_keys(self) -> list[Key]:
-        colors = map(self._extract_color, self._bboxes)
+        colors = map(self._extract_color, self._crops)
         colors = filter(lambda c: c is not None, colors)
+        colors = to_palette(colors, self.palette)
 
         key_ids = map(self.color_to_id, colors)
         return [Key(bbox, id_) for bbox, id_ in zip(self._bboxes, key_ids)]
+
+    @staticmethod
+    def _extract_color(image: np.ndarray, ignore_black: bool = True, reduce="median") -> tuple[int, int, int] | None:
+        image = np.vstack(image)
+
+        if ignore_black:
+            # noinspection PyUnresolvedReferences
+            image = image[(image != 0).any(axis=-1)]
+
+        if image.size == 0:
+            return None
+        return getattr(np, reduce)(image, axis=0)
 
     #  @override
     def show(self, show_labels: bool = True, scale: int = 3) -> None:
@@ -88,17 +101,6 @@ class KeyMaskImage(KeyboardImage):
     def binarize(self) -> np.ndarray:
         image = super().binarize()
         return (image > 1).astype("uint8")
-
-    def _extract_color(self, bbox: BBox, ignore_black: bool = True, reduce="median") -> tuple[int, int, int] | None:
-        image = self.crop(bbox)
-
-        if ignore_black:
-            # noinspection PyUnresolvedReferences
-            image = image[(image != 0).any(axis=-1)]
-
-        if image.size == 0:
-            return None
-        return getattr(np, reduce)(image, axis=0)
 
     @staticmethod
     def id_to_color(i: int) -> tuple[int, int, int]:
