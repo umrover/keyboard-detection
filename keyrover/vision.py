@@ -6,17 +6,6 @@ import ultralytics.engine.results
 from .image import img_to_numpy, ImageType
 
 
-def extract_rects(img: ImageType) -> list[cv2.typing.Rect]:
-    img = img_to_numpy(img, convert_bool=True)
-
-    quads = []
-    for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
-        q = cv2.boundingRect(c)
-        quads.append(q)
-
-    return quads
-
-
 def extract_rotated_rects(img: ImageType) -> list[cv2.typing.MatLike]:
     img = img_to_numpy(img, convert_bool=True)
 
@@ -81,4 +70,4 @@ def crop_rect(img: ImageType, rect: np.ndarray) -> np.ndarray:
     return img_crop
 
 
-__all__ = ["extract_rects", "extract_quads", "extract_polygons", "extract_rotated_rects", "crop_rect"]
+__all__ = ["extract_quads", "extract_polygons", "extract_rotated_rects", "crop_rect"]

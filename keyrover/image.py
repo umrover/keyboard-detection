@@ -1,20 +1,18 @@
-import torch
-import numpy as np
-
 from PIL import Image
 import cv2
 
 from scipy.spatial import cKDTree
 
-
-ImageType = np.ndarray | Image.Image | torch.Tensor
+from keyrover.util import *
 
 
 def img_to_numpy(img: ImageType, convert_bool: bool = False) -> np.ndarray:
     if isinstance(img, Image.Image):
         img = np.array(img)
+
     elif isinstance(img, torch.Tensor):
         img = img.detach().cpu().numpy()
+
     elif not isinstance(img, np.ndarray):
         raise TypeError("Can't convert unknown type image to numpy array")
 
@@ -26,8 +24,10 @@ def img_to_numpy(img: ImageType, convert_bool: bool = False) -> np.ndarray:
 def img_to_PIL(img: ImageType) -> Image.Image:
     if isinstance(img, np.ndarray):
         return Image.fromarray(img)
+
     if isinstance(img, Image.Image):
         return img
+
     raise TypeError("Can't convert unknown type image to PIL Image")
 
 
