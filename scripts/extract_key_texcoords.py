@@ -25,5 +25,5 @@ if __name__ == "__main__":
     with Pool() as p:
         texcoords = list(tqdm(p.imap(get_key_texcoords, paths), total=len(paths)))
 
-    with open(f"{RAW_TEXCOORDS}/key_texcoords.bin", "wb") as file:
+    with open(f"{TEXCOORDS_DATASET}/key_texcoords.bin", "wb") as file:
         pickle.dump(texcoords, file)

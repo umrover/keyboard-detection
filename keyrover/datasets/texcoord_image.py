@@ -8,7 +8,7 @@ class TexCoordKeyboardImage(MulticlassKeyboardImage):
     def __init__(self, path: str) -> None:
         super().__init__(path)
 
-        self.texcoord_path = f"{RAW_TEXCOORDS}/{self.filename}.png"
+        self.texcoord_path = f"{TEXCOORDS_DATASET}/{self.filename}.png"
         self.texcoords = Image.open(self.texcoord_path).convert("RGB")
         self.texcoords = img_to_numpy(self.texcoords)
 

@@ -45,16 +45,16 @@ def reduce_texcoords(data) -> tuple[tuple[list, dict[int, float]], tuple[list, d
 
 
 if __name__ == "__main__":
-    with open(f"{RAW_TEXCOORDS}/key_texcoords.bin", "rb") as file:
+    with open(f"{TEXCOORDS_DATASET}/key_texcoords.bin", "rb") as file:
         texcoords = pickle.load(file)
 
     (U, U_means), (V, V_means) = reduce_texcoords(texcoords)
 
-    with open(f"{RAW_TEXCOORDS}/key_texcoords_means.bin", "wb") as file:
+    with open(f"{TEXCOORDS_DATASET}/key_texcoords_means.bin", "wb") as file:
         pickle.dump(U_means, file)
         pickle.dump(V_means, file)
 
-    with open(f"{RAW_TEXCOORDS}/key_texcoords_all.bin", "wb") as file:
+    with open(f"{TEXCOORDS_DATASET}/key_texcoords_all.bin", "wb") as file:
         pickle.dump(U, file)
         pickle.dump(V, file)
 
@@ -68,5 +68,5 @@ if __name__ == "__main__":
 
     palette = Palette(colors, classes)
 
-    with open(f"{RAW_TEXCOORDS}/key_texcoords_palette.bin", "wb") as file:
+    with open(f"{TEXCOORDS_DATASET}/key_texcoords_palette.bin", "wb") as file:
         pickle.dump(palette, file)

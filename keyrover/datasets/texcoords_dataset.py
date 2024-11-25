@@ -11,7 +11,7 @@ import torch
 from torchvision.transforms import v2 as transforms
 
 from keyrover.ml import identity
-from keyrover import RAW_TEXCOORDS
+from keyrover import TEXCOORDS_DATASET
 from .abstract import KeyboardDatasetBase
 
 
@@ -32,7 +32,7 @@ class KeyboardTexCoordsDataset(KeyboardDatasetBase):
         img = Image.open(path)
         img = self._resize(self._to_image(img))
 
-        mask_path = f"{RAW_TEXCOORDS}/{os.path.basename(path).removesuffix('.jpg')}.png"
+        mask_path = f"{TEXCOORDS_DATASET}/{os.path.basename(path).removesuffix('.jpg')}.png"
         target = Image.open(mask_path).convert("RGB")
         target = self._resize(self._to_image(target))[:2].float()
         if self._norm:
