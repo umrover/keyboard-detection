@@ -1,5 +1,4 @@
 import bpy
-import math
 import os
 from tqdm import tqdm
 

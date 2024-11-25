@@ -1,7 +1,16 @@
-datasets
+datasets/**/*.png
+datasets/**/*.jpg
+datasets/**/*.jpeg
+datasets/**/*.txt
+
+*.mp4
 *.zip
 
-**.blend1
+*.pt
+*.ckpt
+*.cache
+
+*.blend1
 blender/assets
 blender/renders
 blender/masks
@@ -12,10 +21,5 @@ wandb
 runs
 models/yolo
 models/yolo-multiclass
-**.pt
-**.ckpt
-
-!**.yaml
-!keyrover/datasets
 
 /scripts/countlines.py
