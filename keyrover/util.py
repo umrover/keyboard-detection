@@ -4,3 +4,8 @@ def describe(arr) -> None:
         Min: {arr.min()}
         Max: {arr.max()}
         Mean: {arr.mean()}""")
+
+
+Vec2 = tuple[float, float]
+Vec3 = tuple[float, float, float]
+Vec4 = tuple[float, float, float, float]
