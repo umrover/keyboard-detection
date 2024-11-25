@@ -105,6 +105,19 @@ def show_images(images: Sequence[ImageType],
     plt.tight_layout()
 
 
+def show_channels(img: ImageType) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Shows the RGB channels of an image
+    """
+    img = img_to_numpy(img)
+
+    r, g, b = cv2.split(img)
+    z = np.zeros(r.shape)
+
+    show_images([img, np.stack([z, z, b]), np.stack([r, z, z]), np.stack([z, g, z])])
+    return r, g, b
+
+
 def imhist(img: ImageType | str,
            ax: plt.Axes | None = None,
            bins: int = 50,
@@ -166,8 +179,7 @@ def draw_textbox(img: ImageType,
                  font_size: float = 0.3,
                  thickness: float = 0.5,
                  line_width: int = 1,
-                 draw_text: bool = True,
-                 **kwargs) -> np.array:
+                 draw_text: bool = True) -> np.array:
     """
     Plots a box with text above it
     """
@@ -219,4 +231,5 @@ def plot_yolo(results: Results, **kwargs) -> np.ndarray | None:
                             [f"{box.cls} {box.conf}%" for box in results.boxes], **kwargs)
 
 
-__all__ = ["imshow", "imhist", "show_images", "draw_textbox", "plot_yolo", "plot_predictions", "gridplot", "plt"]
+__all__ = ["imshow", "imhist", "show_images", "show_channels",
+           "draw_textbox", "plot_yolo", "plot_predictions", "gridplot", "plt"]
