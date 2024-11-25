@@ -3,6 +3,8 @@ datasets/**/*.jpg
 datasets/**/*.jpeg
 datasets/**/*.txt
 
+!datasets/test/*.jpg
+
 *.mp4
 *.zip
 

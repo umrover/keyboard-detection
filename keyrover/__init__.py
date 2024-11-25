@@ -6,4 +6,5 @@ from .blender import *
 from .util import *
 
 import os
-os.chdir(f"{os.path.dirname(os.path.realpath(__file__))}/..")
+if os.getcwd().endswith("notebooks"):
+    os.chdir(f"{os.path.dirname(os.path.realpath(__file__))}/..")
