@@ -68,10 +68,14 @@ class BatchedProjectionMatrix(BatchedLinearAlgebra):
         """
         P = K @ E
         """
-        alpha = self._to_tensor(alpha)
-        beta = self._to_tensor(beta)
-        gamma = self._to_tensor(gamma)
-        position = self._to_tensor(position)
+        assert type(alpha) is type(beta), "alpha, beta, & gamma must be same dtype"
+        assert type(alpha) is type(gamma), "alpha, beta, & gamma must be same dtype"
+        keepdims = not isinstance(alpha, (float, int))
+
+        alpha = self._to_tensor(alpha, keepdims=keepdims)
+        beta = self._to_tensor(beta, keepdims=keepdims)
+        gamma = self._to_tensor(gamma, keepdims=keepdims)
+        position = self._to_tensor(position, keepdims=keepdims)
 
         E = self.extrinsic_matrix(alpha, beta, gamma, position)
         return self.K @ E

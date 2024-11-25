@@ -28,18 +28,20 @@ class InverseBilinear(BatchedLinearAlgebra):
         self.projection_matrix = BatchedProjectionMatrix(batch_size, device)
         self.coordinates = self._coordinates_mesh(width=width, height=height, resolution=2)
 
+        change_of_basis = HomogenousChangeOfBasis(1, device)
+        self.change_of_basis = HomogenousChangeOfBasis(batch_size, device)
+
         self.p1 = torch.tensor([*p1, 1], dtype=torch.float32, device=self.device)
         self.p2 = torch.tensor([*p2, 1], dtype=torch.float32, device=self.device)
         self.p3 = torch.tensor([*p3, 1], dtype=torch.float32, device=self.device)
         self.p4 = torch.tensor([*p4, 1], dtype=torch.float32, device=self.device)
-        self.change_of_basis = HomogenousChangeOfBasis(batch_size, device)
 
         uv1 = torch.tensor([[0], [0]], dtype=torch.float32)
         uv2 = torch.tensor([[1], [0]], dtype=torch.float32)
         uv3 = torch.tensor([[1], [1]], dtype=torch.float32)
         uv4 = torch.tensor([[0], [1]], dtype=torch.float32)
 
-        self.UV_basis = self.change_of_basis(uv1, uv2, uv3, uv4)
+        self.UV_basis = change_of_basis(uv1, uv2, uv3, uv4)
 
     def __call__(self, alpha: TensorType, beta: TensorType, gamma: TensorType, position: TensorType) -> torch.Tensor:
         corners = self.project_corners(alpha, beta, gamma, position)
