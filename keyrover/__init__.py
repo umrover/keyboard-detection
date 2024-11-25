@@ -1,6 +1,5 @@
 from .paths import *
 from .plotting import *
-from .image import *
 
 from .blender import *
 from .util import *

@@ -1,4 +1,7 @@
+from __future__ import annotations
 from typing import overload
+
+import numpy as np
 
 from keyrover.util import Vec2
 
@@ -26,14 +29,46 @@ class BBox:
             self._p1 = (self._centre[0] - self._width / 2, self._centre[1] - self._height / 2)
             self._p2 = (self._centre[0] + self._width / 2, self._centre[1] + self._height / 2)
 
+        self._p1 = np.array(self._p1)
+        self._p2 = np.array(self._p2)
+        self._centre = np.array(self._centre)
+
+    # TODO implement using copy or something
+    def scale(self, factor) -> BBox:
+        return BBox(self._p1 * factor, self._p2 * factor)
+
     width: float = property(lambda self: self._width)
     height: float = property(lambda self: self._height)
 
     area: float = property(lambda self: self._width * self._height)
 
-    p1: Vec2 = property(lambda self: self._p1)
-    p2: Vec2 = property(lambda self: self._p2)
-    centre: Vec2 = property(lambda self: self._centre)
+    p1: np.ndarray = property(lambda self: self._p1)
+    p2: np.ndarray = property(lambda self: self._p2)
+    centre: np.ndarray = property(lambda self: self._centre)
+
+    p1p2: np.ndarray = property(lambda self: (self._p1.astype("int"), self._p2.astype("int")))
+    xywh: np.ndarray = property(lambda self: np.array([*self._centre, self._width, self._height], dtype="int"))
+    xyxy: np.ndarray = property(lambda self: np.array([*self._p1, *self._p2], dtype="int"))
 
 
-__all__ = ["BBox"]
+class LabeledBBox(BBox):
+    @overload
+    def __init__(self, p1: Vec2, p2: Vec2, label: str):
+        ...
+
+    @overload
+    def __init__(self, centre: Vec2, width: float, height: float, label: str):
+        ...
+
+    def __init__(self, *args):
+        super().__init__(*args[:-1])
+        self._label: str = args[-1]
+
+    # TODO remove
+    def scale(self, factor) -> LabeledBBox:
+        return LabeledBBox(self._p1 * factor, self._p2 * factor, self._label)
+
+    label: str = property(lambda self: self._label)
+
+
+__all__ = ["BBox", "LabeledBBox"]

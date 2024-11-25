@@ -1,12 +1,8 @@
-from typing import Sequence, Literal, Any, Iterable
-
-import torch
-import numpy as np
-
 import matplotlib.pyplot as plt
-import cv2
 from ultralytics.engine.results import Boxes, Results
 
+from keyrover.util import *
+from keyrover.vision.bbox import *
 from .image import img_to_numpy, ImageType, reorder_image_axes
 from .math import get_median_factors
 
@@ -20,8 +16,7 @@ def normalize(img: np.ndarray | torch.Tensor) -> np.ndarray | torch.Tensor:
     return img
 
 
-def _imshow(img: ImageType,
-            ax: plt.Axes | None) -> None:
+def _imshow(img: ImageType, ax: plt.Axes | None) -> plt.Axes:
     """
     Plots an array using matplotlib
     """
@@ -49,12 +44,13 @@ def _imshow(img: ImageType,
 
     ax.axis("off")
     ax.imshow(img, interpolation="nearest")
+    return ax
 
 
 def imshow(img: ImageType,
            mask: ImageType | None = None,
            ax: plt.Axes | None = None,
-           **kwargs) -> None:
+           **kwargs) -> plt.Axes | tuple[plt.Axes, ...]:
     """
     Sets up and plots an image using matplotlib
     """
@@ -74,6 +70,7 @@ def imshow(img: ImageType,
     _, (ax1, ax2) = plt.subplots(ncols=2, **kwargs)
     _imshow(img, ax1)
     _imshow(mask, ax2)
+    return ax1, ax2
 
 
 def gridplot(n: int, **kwargs) -> tuple[plt.Figure, Sequence[plt.Axes]]:
@@ -171,31 +168,18 @@ def get_best_grid(n: int) -> tuple[int, int]:
     return best_grid
 
 
-def draw_textbox(img: ImageType,
-                 p1: tuple[int, int], p2: tuple[int, int], text: str,
-                 color: tuple[int, int, int] = (230, 55, 107),
-                 scale: int = 5,
-                 font=cv2.FONT_HERSHEY_TRIPLEX,
-                 font_size: float = 0.3,
-                 thickness: float = 0.5,
-                 line_width: int = 1,
-                 draw_text: bool = True) -> np.array:
+def draw_textbox(img: ImageType, bbox: LabeledBBox, color: Vec3 = (230, 55, 107), thickness: int = 3,
+                 font=cv2.FONT_HERSHEY_SIMPLEX, font_size: float = 1.5, draw_text: bool = True) -> np.array:
     """
     Plots a box with text above it
     """
+
     img = img_to_numpy(img)
-
-    x1, y1 = p1
-    font_size *= scale
-    thickness = int(scale * thickness)
-
-    cv2.rectangle(img, p1, p2, color, thickness=scale * 2)
+    cv2.rectangle(img, bbox.xywh, color=color, thickness=thickness)
 
     if draw_text:
-        (w, h), _ = cv2.getTextSize(text, font, font_size, thickness)
-        img = cv2.rectangle(img, (x1, y1 - h - scale * 2), (x1 + w + scale * 3, y1), color, line_width)
-        img = cv2.putText(img, text, (x1 + scale, y1 - scale), font, font_size, (255, 255, 255), thickness, cv2.LINE_AA)
-
+        img = cv2.putText(img, bbox.label, bbox.centre.astype("int"),
+                          font, font_size, (255, 255, 255), thickness, cv2.LINE_AA)
     return img
 
 

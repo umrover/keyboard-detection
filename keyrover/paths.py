@@ -1,18 +1,16 @@
 from typing import Final
 
+import os
 
-DATASETS: Final = "datasets"
+
+ROOT_PATH: Final[str] = f"{os.path.dirname(os.path.abspath(__file__))}/.."
+DATASETS: Final[str] = f"{ROOT_PATH}/datasets"
 
 RAW_BACKGROUNDS: Final[str] = f"{DATASETS}/bg-20k"
 RESIZED_BACKGROUNDS: Final[str] = f"{DATASETS}/bg-20k-resized"
 
-TEXCOORDS_DATASET: Final[str] = f"{DATASETS}/texcoords/v4-nodistort"
-
 RAW_DATASET: Final[str] = f"{DATASETS}/raw"
 RAW_RENDERS: Final[str] = f"{RAW_DATASET}/renders"
-RAW_MASKS: Final[str] = f"{RAW_DATASET}/masks"
 
 YOLO_BINARY_DATASET: Final[str] = f"{DATASETS}/yolo"
 YOLO_MULTI_DATASET: Final[str] = f"{DATASETS}/yolo-multiclass"
-SEGMENTATION_DATASET: Final[str] = f"{DATASETS}/segmentation/v4-nodistort"
-TEST_DATASET: Final[str] = f"{DATASETS}/test"
