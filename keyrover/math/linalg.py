@@ -1,4 +1,7 @@
+from typing import Sequence
 import torch
+
+TensorType = torch.Tensor | Sequence[float]
 
 
 class BatchedLinearAlgebra:
@@ -9,5 +12,10 @@ class BatchedLinearAlgebra:
         self.ones = torch.ones(self.batch_size, dtype=torch.float32, device=self.device)
         self.zeros = torch.zeros(self.batch_size, dtype=torch.float32, device=self.device)
 
+    def _to_tensor(self, p: TensorType) -> torch.Tensor:
+        if isinstance(p, torch.Tensor):
+            return p.to(self.device)
+        return torch.tensor([p], device=self.device, dtype=torch.float32)
 
-__all__ = ["BatchedLinearAlgebra"]
+
+__all__ = ["BatchedLinearAlgebra", "TensorType"]

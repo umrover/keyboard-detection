@@ -1,11 +1,23 @@
 import torch
-from torch import Tensor
 
-from .linalg import BatchedLinearAlgebra
+from .linalg import BatchedLinearAlgebra, TensorType
 from .rotation import RotationMatrix
 
 
-class ProjectionMatrix(BatchedLinearAlgebra):
+class PerspectiveProjection:
+    def __init__(self, matrix: torch.Tensor):
+        self.matrix = matrix
+
+    def __call__(self, v: torch.Tensor) -> torch.Tensor:
+        """
+        [x', y', z'] = P @ [x, y, 1]
+        return [x' / z', y' / z']
+        """
+        v = self.matrix @ v
+        return (v[:, :2] / v[:, -1:]).T
+
+
+class BatchedProjectionMatrix(BatchedLinearAlgebra):
     def __init__(self, batch_size: int, device):
         super().__init__(batch_size, device)
 
@@ -21,8 +33,10 @@ class ProjectionMatrix(BatchedLinearAlgebra):
 
         self.rotation_matrix = RotationMatrix(batch_size, device)
 
-    def __call__(self, alpha: Tensor, beta: Tensor, gamma: Tensor, position: Tensor) -> Tensor:
-        return self.projection_matrix(alpha, beta, gamma, position)
+    def __call__(self,
+                 alpha: TensorType, beta: TensorType, gamma: TensorType, position: TensorType) -> PerspectiveProjection:
+        matrix = self.projection_matrix(alpha, beta, gamma, position)
+        return PerspectiveProjection(matrix)
 
     def extrinsic_matrix(self, alpha, beta, gamma, position):
         """
@@ -50,12 +64,18 @@ class ProjectionMatrix(BatchedLinearAlgebra):
         K3 = torch.stack([self.zeros, self.zeros, self.ones], dim=1)
         return torch.stack([K1, K2, K3], dim=1)
 
-    def projection_matrix(self, alpha: Tensor, beta: Tensor, gamma: Tensor, position: Tensor) -> Tensor:
+    def projection_matrix(self,
+                          alpha: TensorType, beta: TensorType, gamma: TensorType, position: TensorType) -> torch.Tensor:
         """
         P = K @ E
         """
+        alpha = self._to_tensor(alpha)
+        beta = self._to_tensor(beta)
+        gamma = self._to_tensor(gamma)
+        position = self._to_tensor(position)
+
         E = self.extrinsic_matrix(alpha, beta, gamma, position)
         return self.K @ E
 
 
-__all__ = ["ProjectionMatrix"]
+__all__ = ["BatchedProjectionMatrix", "PerspectiveProjection"]
