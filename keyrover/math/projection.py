@@ -1,5 +1,6 @@
 import torch
 
+from keyrover import CameraMatrix
 from .linalg import BatchedLinearAlgebra, TensorType
 from .rotation import RotationMatrix
 
@@ -27,9 +28,7 @@ class BatchedProjectionMatrix(BatchedLinearAlgebra):
                                [0, fy, 240],
                                [0, 0, 1]], dtype=torch.float32, device=self.device)
 
-        self.R_to_Blender = torch.tensor([[1, 0, 0],
-                                          [0, -1, 0],
-                                          [0, 0, -1]], dtype=torch.float32, device=self.device)
+        self.R_to_Blender = torch.tensor(CameraMatrix, dtype=torch.float32, device=self.device)
 
         self.rotation_matrix = RotationMatrix(batch_size, device)
 
