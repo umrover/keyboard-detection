@@ -2,6 +2,7 @@ from typing import Sequence
 
 import glob
 import random
+import pickle
 
 import numpy as np
 
@@ -17,19 +18,11 @@ def get_dataset_paths(shuffle: bool = True, base: str = SEGMENTATION_DATASET) ->
     return image_paths
 
 
-def get_dataset_norm_params(version: int) -> tuple[np.ndarray, np.ndarray]:
-    if version == 1:
-        raise NotImplemented()
+def get_dataset_norm_params(version: str) -> tuple[np.ndarray, np.ndarray]:
+    with open("datasets/segmentation/normalization.bin", "rb") as f:
+        norm_parameters = pickle.load(f)
 
-    elif version == 2:
-        return (np.array([0.2517634, 0.26364404, 0.27402246]),
-                np.array([0.241223, 0.24496816, 0.25682035]))
-
-    elif version == 3:
-        return (np.array([0.26772413, 0.28418145, 0.28728417]),
-                np.array([0.24711585, 0.24890053, 0.25881228]))
-
-    raise ValueError(f"Unknown dataset version {version}")
+    return norm_parameters[version]
 
 
 def calculate_dataset_norm_params(_data):
