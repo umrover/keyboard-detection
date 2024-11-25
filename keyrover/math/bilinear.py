@@ -10,18 +10,22 @@ Vec3 = tuple[float, float, float]
 
 
 class InverseBilinear(BatchedLinearAlgebra):
-    def __init__(self, batch_size: int, device, width: int, height: int, p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3):
+    def __init__(self, batch_size: int, device, width: int, height: int,
+                 p1: Vec3, p2: Vec3, p3: Vec3, p4: Vec3):
+        """
+        Args:
+            batch_size:
+            device: "cuda" or "cpu" or "mps"
+            width: in pixels
+            height: in pixels
+            p1: (x, y) in world coordinates
+            p2: (x, y) in world coordinates
+            p3: (x, y) in world coordinates
+            p4: (x, y) in world coordinates
+        """
         super().__init__(batch_size, device)
 
         self.projection_matrix = BatchedProjectionMatrix(batch_size, device)
-
-        # X = -0.21919
-        # Y = -0.081833
-        # Z = 0.13053
-
-        # width = 2.7986
-        # height = 0.95583
-
         self.coordinates = self._coordinates_mesh(width=width, height=height, resolution=2)
 
         self.p1 = torch.tensor([*p1, 1], dtype=torch.float32, device=self.device)
@@ -31,9 +35,9 @@ class InverseBilinear(BatchedLinearAlgebra):
         self.change_of_basis = HomogenousChangeOfBasis(batch_size, device)
 
         uv1 = torch.tensor([[0], [0]], dtype=torch.float32)
-        uv2 = torch.tensor([[255], [0]], dtype=torch.float32)
-        uv3 = torch.tensor([[255], [255]], dtype=torch.float32)
-        uv4 = torch.tensor([[0], [255]], dtype=torch.float32)
+        uv2 = torch.tensor([[1], [0]], dtype=torch.float32)
+        uv3 = torch.tensor([[1], [1]], dtype=torch.float32)
+        uv4 = torch.tensor([[0], [1]], dtype=torch.float32)
 
         self.UV_basis = self.change_of_basis(uv1, uv2, uv3, uv4)
 
@@ -50,13 +54,13 @@ class InverseBilinear(BatchedLinearAlgebra):
         result = torch.einsum('bij, yxj -> byxi', C, self.coordinates)
         result = result[:, :, :, :3] / result[:, :, :, -1:]
 
-        # filter any points outside the keyboard
-        result[(result.max(dim=-1)[0] > 255)] = 0
+        # filter any points outside the valid range
+        result[(result.max(dim=-1)[0] > 1)] = 0
         result[result.min(dim=-1)[0] < 0] = 0
 
         # reorder dimensions from (batch, y, x, channel) to (batch, channel, y, x)
         result = torch.einsum('byxc -> bcyx', result)
-        return (result / 128) - 1
+        return result
 
     def project_corners(self, alpha: TensorType, beta: TensorType, gamma: TensorType,
                         position: TensorType) -> tuple[torch.Tensor, ...]:

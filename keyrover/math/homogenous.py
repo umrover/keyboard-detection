@@ -4,6 +4,13 @@ from .linalg import BatchedLinearAlgebra, TensorType
 
 
 class HomogenousChangeOfBasis(BatchedLinearAlgebra):
+    """
+    Given 4 (x, y) coordinates, this finds a homogenous change of basis matrix
+    that can be used to convert to the standard basis
+
+    See https://math.stackexchange.com/questions/296794/finding-the-transform-matrix-from-4-projected-points-with-javascript
+    """
+
     def __call__(self, p1: TensorType, p2: TensorType, p3: TensorType, p4: TensorType) -> torch.Tensor:
         p1 = self._to_tensor(p1)
         p2 = self._to_tensor(p2)
