@@ -15,4 +15,16 @@ class Palette:
         return self.colors_to_name[i]
 
 
+def image_color(image: np.ndarray, ignore_black: bool = True, reduce="median") -> tuple[int, int, int] | None:
+    image = np.vstack(image)
+
+    if ignore_black:
+        # noinspection PyUnresolvedReferences
+        image = image[(image != 0).any(axis=-1)]
+
+    if image.size == 0:
+        return None
+    return getattr(np, reduce)(image, axis=0)
+
+
 __all__ = ["image_color", "Palette"]

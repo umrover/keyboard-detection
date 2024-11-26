@@ -56,11 +56,11 @@ class KeyboardImage:
         return ~self._image
 
     @overload
-    def crop(self, x: int, y: int, w: int, h: int) -> KeyboardImage:
+    def crop(self, x: int, y: int, w: int, h: int) -> np.array:
         ...
 
     @overload
-    def crop(self, bbox: BBox) -> KeyboardImage:
+    def crop(self, bbox: BBox) -> np.array:
         ...
 
     def crop(self, *args) -> np.array:

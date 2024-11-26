@@ -2,6 +2,7 @@ from keyrover import *
 from keyrover.vision.bbox import *
 from keyrover.math import median_filter
 from keyrover.image import to_palette
+from keyrover.color import image_color
 
 from .image import KeyboardImage
 
@@ -37,7 +38,10 @@ class Key(LabeledBBox):
 
     def __init__(self, bbox: BBox, id_: int):
         super().__init__(bbox.p1, bbox.p2, self.to_label(id_))
-        self._id: Final = id_
+        self._id: Final[int] = id_
+
+    def __hash__(self) -> int:
+        return self._id
 
     @staticmethod
     def to_label(id_: int) -> str:
@@ -56,6 +60,10 @@ class KeyMaskImage(KeyboardImage):
 
         self._keys: Final = self._extract_keys()
 
+    def __iter__(self) -> Key:
+        for key in self._keys:
+            yield key
+
     def _extract_rects(self) -> tuple[BBox]:
         bboxes = []
 
@@ -67,24 +75,12 @@ class KeyMaskImage(KeyboardImage):
         return median_filter(bboxes, statistic=tuple(areas))
 
     def _extract_keys(self) -> list[Key]:
-        colors = map(self._extract_color, self._crops)
+        colors = map(image_color, self._crops)
         colors = filter(lambda c: c is not None, colors)
         colors = to_palette(colors, self.palette)
 
         key_ids = map(self.color_to_id, colors)
         return [Key(bbox, id_) for bbox, id_ in zip(self._bboxes, key_ids)]
-
-    @staticmethod
-    def _extract_color(image: np.ndarray, ignore_black: bool = True, reduce="median") -> tuple[int, int, int] | None:
-        image = np.vstack(image)
-
-        if ignore_black:
-            # noinspection PyUnresolvedReferences
-            image = image[(image != 0).any(axis=-1)]
-
-        if image.size == 0:
-            return None
-        return getattr(np, reduce)(image, axis=0)
 
     #  @override
     def show(self, show_labels: bool = True, scale: int = 3) -> None:
@@ -96,6 +92,9 @@ class KeyMaskImage(KeyboardImage):
             image = draw_textbox(image, key, draw_text=show_labels)
 
         imshow(image)
+
+    def show_crops(self) -> None:
+        show_images(self._crops)
 
     #  @override
     def binarize(self) -> np.ndarray:
