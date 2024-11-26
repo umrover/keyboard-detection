@@ -1,4 +1,3 @@
-import os
 import glob
 import shutil
 import random
@@ -6,11 +5,8 @@ import random
 from tqdm import tqdm
 from multiprocessing import Pool
 
-import numpy as np
-
-from keyrover.image import *
 from keyrover.effects import *
-from keyrover import RESIZED_BACKGROUNDS, RAW_RENDERS, SEGMENTATION_DATASET
+from keyrover import *
 
 _overlay_funcs = (add_hard_overlay, add_soft_shadow)
 
@@ -39,7 +35,7 @@ def _apply_random_vignette(img: ImageType) -> np.ndarray:
 
 
 def _apply_random_image_enhance(img: ImageType, min_exposure: float = 0.4, min_contrast: float = 0.2) -> Image.Image:
-    img = img_to_PIL(img)
+    img = to_pillow(img)
 
     contrast, exposure, sharpness, saturation = np.random.normal(loc=1.0, scale=0.5, size=4)
     exposure = max(exposure, min_exposure)
@@ -54,7 +50,7 @@ def _apply_random_image_enhance(img: ImageType, min_exposure: float = 0.4, min_c
 
 
 def _create_random_highlights(img: ImageType) -> Image.Image:
-    img = img_to_PIL(img)
+    img = to_pillow(img)
     img = img.convert("RGBA")
 
     num_shadows = np.random.geometric(0.5, (1,))[0] - 1
@@ -72,14 +68,14 @@ def _add_chromatic_abberation(img: ImageType) -> np.ndarray:
 
 
 def _add_gaussian_noise(img: ImageType, sigma: float = 0.1) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
     gauss = np.random.normal(0, sigma, img.shape)
     img = img + gauss
     return normalize(img).astype("uint8")
 
 
 def _add_salt_and_pepper_noise(img: ImageType, amount: float = 0.004, ratio: float = 0.5) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     # Salt mode
     num_salt = int(np.ceil(amount * img.size * ratio))
@@ -94,7 +90,7 @@ def _add_salt_and_pepper_noise(img: ImageType, amount: float = 0.004, ratio: flo
 
 
 def _add_poisson_noise(img: ImageType) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     vals = len(np.unique(img))
     vals = 3 ** np.ceil(np.log2(vals))
@@ -103,7 +99,7 @@ def _add_poisson_noise(img: ImageType) -> np.ndarray:
 
 
 def _add_speckle_noise(img: ImageType) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
     img = img + img * np.random.randn(*img.shape)
     return normalize(img).astype("uint8")
 
@@ -140,15 +136,15 @@ def create_random_image(path):
 
     output = Image.fromarray(output.astype("uint8"))
 
-    output_path = f"{SEGMENTATION_DATASET}/{os.path.basename(path).removesuffix('.png')}.jpg"
+    output_path = f"{KEYBOARD_DATASET}/{os.path.basename(path).removesuffix('.png')}.jpg"
     output.save(output_path, quality=random.randint(25, 80))
 
 
 if __name__ == "__main__":
     DATASET_VERSION = 4
 
-    shutil.rmtree(SEGMENTATION_DATASET)
-    os.mkdir(SEGMENTATION_DATASET)
+    shutil.rmtree(KEYBOARD_DATASET)
+    os.mkdir(KEYBOARD_DATASET)
 
     paths = glob.glob(f"{RAW_RENDERS}/*.png")
 

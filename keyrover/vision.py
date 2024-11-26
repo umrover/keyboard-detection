@@ -3,11 +3,11 @@ import numpy as np
 
 import ultralytics.engine.results
 
-from .image import img_to_numpy, ImageType
+from .util import to_numpy, ImageType
 
 
 def extract_rotated_rects(img: ImageType) -> list[cv2.typing.MatLike]:
-    img = img_to_numpy(img, convert_bool=True)
+    img = to_numpy(img, convert_bool=True)
 
     quads = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
@@ -20,7 +20,7 @@ def extract_rotated_rects(img: ImageType) -> list[cv2.typing.MatLike]:
 
 
 def extract_quads(img: ImageType) -> list[cv2.typing.MatLike]:
-    img = img_to_numpy(img, convert_bool=True)
+    img = to_numpy(img, convert_bool=True)
 
     qs = []
 
@@ -38,7 +38,7 @@ def extract_quads(img: ImageType) -> list[cv2.typing.MatLike]:
 
 
 def extract_polygons(img: ImageType, epsilon=0.01) -> list[cv2.typing.MatLike]:
-    img = img_to_numpy(img, convert_bool=True)
+    img = to_numpy(img, convert_bool=True)
 
     poly = []
     for c in cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]:
@@ -57,7 +57,7 @@ def crop_rect(img: ImageType, rect: np.ndarray) -> np.ndarray:
         x1, y1, x2, y2 = rect
         return crop_rect(img, np.array([(x1, y1), (x2, y1), (x2, y2), (x1, y2)], dtype="int"))
 
-    img = img_to_numpy(img, convert_bool=True)
+    img = to_numpy(img, convert_bool=True)
 
     width = int(((rect[0, 0] - rect[1, 0]) ** 2 + (rect[0, 1] - rect[1, 1]) ** 2) ** 0.5)
     height = int(((rect[2, 0] - rect[1, 0]) ** 2 + (rect[2, 1] - rect[1, 1]) ** 2) ** 0.5)

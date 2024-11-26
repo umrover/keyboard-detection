@@ -1,13 +1,12 @@
 import random
-import numpy as np
 
 from PIL import ImageEnhance
 
-from .image import *
+from keyrover import *
 
 
 def add_soft_shadow(img: ImageType) -> Image.Image:
-    img = img_to_PIL(img).convert("RGBA")
+    img = to_pillow(img).convert("RGBA")
 
     opacity = random.randint(50, 200)
     thickness = random.randint(150, 400)
@@ -24,7 +23,7 @@ def add_soft_shadow(img: ImageType) -> Image.Image:
 
 
 def add_hard_overlay(img: ImageType) -> Image.Image:
-    img = img_to_PIL(img).convert("RGBA")
+    img = to_pillow(img).convert("RGBA")
 
     thickness = random.randint(100, 400)
     blur = max(5, int(random.gauss(25, 10)))
@@ -49,7 +48,7 @@ def add_hard_overlay(img: ImageType) -> Image.Image:
 
 
 def add_chromatic_aberration(img: ImageType, strength: float = 0.01) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     try:
         r, g, b, _ = cv2.split(img)
@@ -71,7 +70,7 @@ def add_chromatic_aberration(img: ImageType, strength: float = 0.01) -> np.ndarr
 
 def apply_random_affine(img: ImageType, scale_lims: tuple[float, float] = (0.25, 1.5), angle_lims=(0, 360),
                         translation_lims=(2, 2)) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     if len(img.shape) == 3:
         w, h, _ = img.shape
@@ -96,7 +95,7 @@ def apply_random_affine(img: ImageType, scale_lims: tuple[float, float] = (0.25,
 
 
 def apply_motion_blur(img: ImageType, theta: int, ksize: int) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     blur_kernel = get_motion_blur_kernel(theta=theta, thickness=1, ksize=ksize)
     img = cv2.filter2D(img, ddepth=-1, kernel=blur_kernel)
@@ -104,7 +103,7 @@ def apply_motion_blur(img: ImageType, theta: int, ksize: int) -> np.ndarray:
 
 
 def apply_vignette(img: ImageType, sigma: int) -> np.ndarray:
-    img = img_to_numpy(img)
+    img = to_numpy(img)
     vignette_kernel = get_vignette_kernel(sigma, img.shape)
     return (vignette_kernel * img).astype("uint8")
 

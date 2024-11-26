@@ -3,7 +3,8 @@ from ultralytics.engine.results import Boxes, Results
 
 from keyrover.util import *
 from keyrover.vision.bbox import *
-from .image import img_to_numpy, ImageType, reorder_image_axes
+from .util import to_numpy, Image
+from .image import reorder_image_axes
 from .math import get_median_factors
 
 
@@ -20,7 +21,7 @@ def _imshow(img: ImageType, ax: plt.Axes | None) -> plt.Axes:
     """
     Plots an array using matplotlib
     """
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     # if the image's data is out of bounds for matplotlib plotting:
     #   - any negative values
@@ -106,7 +107,7 @@ def show_channels(img: ImageType) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Shows the RGB channels of an image
     """
-    img = img_to_numpy(img)
+    img = to_numpy(img)
 
     r, g, b = cv2.split(img)
     z = np.zeros(r.shape)
@@ -127,7 +128,7 @@ def imhist(img: ImageType | str,
     if isinstance(img, str):
         img = cv2.imread(img)
     else:
-        img = img_to_numpy(img)
+        img = to_numpy(img)
 
     try:
         r, g, b = img.T
@@ -174,7 +175,7 @@ def draw_textbox(img: ImageType, bbox: LabeledBBox, color: Vec3 = (230, 55, 107)
     Plots a box with text above it
     """
 
-    img = img_to_numpy(img)
+    img = to_numpy(img)
     cv2.rectangle(img, bbox.p1.astype("int"), bbox.p2.astype("int"), color=color, thickness=thickness)
 
     if draw_text:

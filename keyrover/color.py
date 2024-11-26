@@ -1,31 +1,28 @@
-from typing import Sequence, Hashable
-
-import numpy as np
 from scipy.spatial import cKDTree
 
-from keyrover.image import img_to_numpy
+from keyrover import *
 
 
 class Palette:
-    def __init__(self, colors: Sequence) -> None:
+    def __init__(self, colors: Sequence[tuple[int, int, int]]) -> None:
         self.colors = np.array(colors, dtype="uint8")
         self.cKDTree = cKDTree(self.colors)
 
     def fit(self, arr: np.ndarray) -> np.ndarray:
-        arr = img_to_numpy(arr)
+        arr = to_numpy(arr)
         indices = self.cKDTree.query(arr, k=1)[1]
         return self.colors[indices]
 
 
 class NamedPalette(Palette):
-    def __init__(self, colors: Sequence, names: Sequence) -> None:
+    def __init__(self, colors: Sequence[tuple[int, int, int]], names: Sequence[str]) -> None:
         super().__init__(colors)
 
         self.colors_to_name = {}
         for c, name in zip(colors, names):
             self.colors_to_name[c] = name
 
-    def __getitem__(self, i: Hashable):
+    def __getitem__(self, i: str):
         return self.colors_to_name[i]
 
 

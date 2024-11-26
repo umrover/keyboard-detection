@@ -4,7 +4,6 @@ import pickle
 from tqdm import tqdm
 from multiprocessing import Pool
 
-import torch
 from torchvision.tv_tensors import BoundingBoxes
 
 from keyrover.datasets import MulticlassKeyboardImage
@@ -25,7 +24,7 @@ def get_bbox_data(path: str) -> dict:
 
 
 if __name__ == "__main__":
-    paths = glob.glob(f"{RAW_MASKS}/*.png")
+    paths = glob.glob(f"{MASKS_DATASET}/*.png")
     with Pool() as p:
         target_data = list(tqdm(p.imap(get_bbox_data, paths), total=len(paths)))
 
