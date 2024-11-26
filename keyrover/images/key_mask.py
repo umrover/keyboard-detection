@@ -1,8 +1,7 @@
 from keyrover import *
 from keyrover.vision.bbox import *
 from keyrover.math import median_filter
-from keyrover.image import to_palette
-from keyrover.color import image_color
+from keyrover.color import image_color, Palette
 
 from .image import KeyboardImage
 
@@ -76,7 +75,7 @@ class KeyMaskImage(KeyboardImage):
     def _extract_keys(self) -> list[Key]:
         colors = map(image_color, self._crops)
         colors = filter(lambda c: c is not None, colors)
-        colors = to_palette(colors, self.palette)
+        colors = self.palette.fit(colors)
 
         key_ids = map(self.color_to_id, colors)
         return [Key(bbox, id_) for bbox, id_ in zip(self._bboxes, key_ids)]
@@ -118,6 +117,6 @@ class KeyMaskImage(KeyboardImage):
         return int(b * 144 + g * 12 + r)
 
 
-KeyMaskImage.palette = np.array([KeyMaskImage.id_to_color(i) for i in range(100)], dtype="uint8")
+KeyMaskImage.palette = Palette([KeyMaskImage.id_to_color(i) for i in range(100)])
 
 __all__ = ["KeyMaskImage"]

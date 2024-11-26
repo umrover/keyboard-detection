@@ -1,8 +1,3 @@
-from PIL import Image
-import cv2
-
-from scipy.spatial import cKDTree
-
 from keyrover.util import *
 
 
@@ -49,16 +44,4 @@ def reorder_image_axes(img: ImageType) -> np.ndarray:
     return img.transpose(1, 2, 0)
 
 
-def binarize_mask(image: Image.Image) -> np.ndarray:
-    binary = np.array(image.convert("L"))
-    return (binary > 1).astype("uint8")
-
-
-def to_palette(image: ImageType, palette: np.ndarray) -> np.ndarray:
-    image = img_to_numpy(image)
-    indices = cKDTree(palette).query(image, k=1)[1]
-    return palette[indices]
-
-
-__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "binarize_mask", "to_palette",
-           "ImageType", "Image", "cv2"]
+__all__ = ["img_to_PIL", "img_to_numpy", "reorder_image_axes", "ImageType"]
