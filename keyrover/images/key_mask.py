@@ -61,8 +61,7 @@ class KeyMaskImage(KeyboardImage):
         self._keys: Final = self._extract_keys()
 
     def __iter__(self) -> Key:
-        for key in self._keys:
-            yield key
+        yield from self._keys
 
     def _extract_rects(self) -> tuple[BBox]:
         bboxes = []

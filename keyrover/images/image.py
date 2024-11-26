@@ -17,13 +17,13 @@ class KeyboardImage:
 
     def __init__(self, arg):
         if isinstance(arg, str):
-            self._path = arg
+            self._path = f"{DATASETS}/{self.default_folder}/{arg}"
 
-            if not os.path.isfile(self._path):
-                self._path = f"{DATASETS}/{self.default_folder}/{self._path}"
-
-            self._image = cv2.imread(self._path)
-            self._image = cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB)
+            try:
+                self._image = cv2.imread(self._path)
+                self._image = cv2.cvtColor(self._image, cv2.COLOR_BGR2RGB)
+            except cv2.error:
+                raise cv2.error(f"Error opening {self._path}")
 
         else:
             self._path = None

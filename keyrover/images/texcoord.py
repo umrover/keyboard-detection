@@ -10,14 +10,15 @@ TextureCoordinate = tuple[float, float]
 class TexcoordImage(KeyboardImage):
     default_folder = "texcoords"
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str, reduce: str = "median") -> None:
         super().__init__(path)
 
         self._mask = KeyMaskImage(path)
-        self._texcoords = self._extract_texcoords()
+        self._texcoords = self._extract_texcoords(reduce=reduce)
 
-    def _extract_texcoords(self, reduce: str = "mean") -> dict[str, TextureCoordinate]:
+    def _extract_texcoords(self, reduce: str) -> dict[str, TextureCoordinate]:
         texcoords = {}
+
         for key in self._mask:
             crop = self.crop(key)
             r, g, _ = image_color(crop, reduce=reduce)
@@ -28,4 +29,4 @@ class TexcoordImage(KeyboardImage):
     texcoords: dict[str, TextureCoordinate] = property(lambda self: self._texcoords)
 
 
-__all__ = ["TexcoordImage"]
+__all__ = ["TexcoordImage", "TextureCoordinate"]
