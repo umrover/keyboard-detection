@@ -6,6 +6,8 @@ import torch
 from PIL import Image
 import cv2
 
+from tqdm.notebook import tqdm
+
 
 def describe(arr) -> None:
     print(
@@ -40,6 +42,12 @@ def to_pillow(img: ImageType) -> Image.Image:
     if isinstance(img, Image.Image):
         return img
     return Image.fromarray(to_numpy(img))
+
+
+def to_tensor(img: ImageType) -> torch.Tensor:
+    if isinstance(img, torch.Tensor):
+        return img
+    return torch.Tensor(to_numpy(img))
 
 
 def to_int(vec: tuple[float, ...]) -> tuple[int, ...]:

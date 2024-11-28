@@ -1,11 +1,16 @@
 from __future__ import annotations
+from typing import overload
 
-from keyrover import *
+import cv2
+import numpy as np
+
+from keyrover import DATASETS, ImageType
+from keyrover.plotting import imshow
 from keyrover.vision import BBox
 
 
 class KeyboardImage:
-    default_folder = None
+    default_folder = "keyboard"
 
     @overload
     def __init__(self, path: str):

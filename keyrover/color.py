@@ -1,6 +1,9 @@
-from scipy.spatial import cKDTree
+from typing import Sequence
 
-from keyrover import *
+from scipy.spatial import cKDTree
+import numpy as np
+
+from keyrover import to_numpy
 
 
 class Palette:

@@ -1,8 +1,11 @@
 import random
 
-from PIL import ImageEnhance
+from PIL import Image, ImageEnhance
+import cv2
 
-from keyrover import *
+import numpy as np
+
+from keyrover import ImageType, to_pillow, to_numpy
 
 
 def add_soft_shadow(img: ImageType) -> Image.Image:

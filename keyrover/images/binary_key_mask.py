@@ -1,4 +1,7 @@
-from keyrover import *
+from typing import Final
+
+import cv2
+
 from keyrover.vision.bbox import *
 from keyrover.math import median_filter
 

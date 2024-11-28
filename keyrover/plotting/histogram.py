@@ -1,5 +1,10 @@
+from typing import Literal
+
 import matplotlib.pyplot as plt
-from keyrover import *
+
+import cv2
+
+from keyrover import ImageType, to_numpy
 
 
 def imhist(img: ImageType | str,
