@@ -3,7 +3,7 @@ import numpy as np
 
 import ultralytics.engine.results
 
-from .util import to_numpy, ImageType
+# from .util import to_numpy, ImageType
 
 
 def extract_rotated_rects(img: ImageType) -> list[cv2.typing.MatLike]:
