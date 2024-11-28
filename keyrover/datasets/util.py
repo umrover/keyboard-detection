@@ -6,11 +6,11 @@ import pickle
 
 import numpy as np
 
-from keyrover import SEGMENTATION_DATASET
+from keyrover import DATASETS
 
 
-def get_dataset_paths(shuffle: bool = True, base: str = SEGMENTATION_DATASET) -> list[str]:
-    image_paths = glob.glob(f"{base}/**")
+def get_dataset_paths(version: str, shuffle: bool = True, extension: str = "jpg") -> list[str]:
+    image_paths = glob.glob(f"{version}/**.{extension}", root_dir=f"{DATASETS}/keyboard")
 
     if shuffle:
         random.shuffle(image_paths)
@@ -21,7 +21,6 @@ def get_dataset_paths(shuffle: bool = True, base: str = SEGMENTATION_DATASET) ->
 def get_dataset_norm_params(version: str) -> tuple[np.ndarray, np.ndarray]:
     with open("datasets/segmentation/normalization.bin", "rb") as f:
         norm_parameters = pickle.load(f)
-
     return norm_parameters[version]
 
 

@@ -12,10 +12,10 @@ from torchvision.transforms import v2 as transforms
 
 from keyrover.ml import identity
 from keyrover import TEXCOORDS_DATASET
-from .abstract import KeyboardDatasetBase
+from .abstract import KeyboardDataset
 
 
-class KeyboardTexCoordsDataset(KeyboardDatasetBase):
+class KeyboardTexCoordsDataset(KeyboardDataset):
     _to_image = transforms.ToImage()
 
     def __init__(self, paths: Sequence[str], size: tuple[float, float] = None, norm: bool = True):

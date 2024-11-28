@@ -3,10 +3,10 @@ from typing import Sequence
 import torch
 from torchvision.transforms import v2 as transforms
 
-from .abstract import KeyboardDatasetBase
+from .abstract import KeyboardDataset
 
 
-class KeyboardDataset(KeyboardDatasetBase):
+class KeyboardDataset(KeyboardDataset):
     def __init__(self, paths: Sequence[torch.Tensor], _transforms=()):
         super().__init__()
         self._images = paths
