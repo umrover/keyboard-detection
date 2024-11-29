@@ -10,6 +10,8 @@ import segmentation_models_pytorch as smp
 
 
 class TexcoordsRegressionModel(KeyboardModel):
+    _save_path = "texcoords"
+
     def __init__(self,
                  arch: Literal["unet", "unetplusplus"],
                  encoder_name: str,

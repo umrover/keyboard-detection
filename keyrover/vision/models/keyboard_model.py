@@ -3,6 +3,8 @@ import lightning as pl
 
 
 class KeyboardModel(pl.LightningModule):
+    _save_path = None
+
     def _step(self, batch: tuple[torch.Tensor, torch.Tensor], stage: str) -> float:
         raise NotImplementedError()
 
@@ -19,8 +21,14 @@ class KeyboardModel(pl.LightningModule):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         return {"optimizer": optimizer}
 
-    def save(self, filepath: str):
-        torch.save(self.state_dict(), filepath)
+    def save(self, filename: str):
+        torch.save(self.state_dict(), f"models/{self._save_path}/{filename}")
+
+    @classmethod
+    def load(cls, filename: str):
+        model = cls()
+        model.load_state_dict(torch.load(f"models/{cls._save_path}/{filename}", weights_only=True))
+        return model
 
 
 __all__ = ["KeyboardModel"]

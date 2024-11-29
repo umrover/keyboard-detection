@@ -20,8 +20,9 @@ class KeyboardCornersDataset(KeyboardTensorDataset):
         frame = int(filename.split("_")[1])
         return KeyboardCornersDataset.corners[frame - 1]
 
-    def denormalize(self, arr: torch.Tensor) -> torch.Tensor:
-        return arr * self.std.to(arr.device) + self.mean.to(arr.device)
+    @staticmethod
+    def denormalize(arr: torch.Tensor) -> torch.Tensor:
+        return arr * KeyboardCornersDataset.std.to(arr.device) + KeyboardCornersDataset.mean.to(arr.device)
 
     _target = corners_from_filename
 

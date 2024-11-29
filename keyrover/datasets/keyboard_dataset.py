@@ -7,6 +7,8 @@ from tqdm import tqdm
 import random
 from functools import partial
 
+import cv2
+
 import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
@@ -95,6 +97,11 @@ class KeyboardDataset(Dataset):
 
     def random_img(self) -> tuple[torch.Tensor, torch.Tensor]:
         return self[random.randint(0, len(self) - 1)]
+
+    def load_image(self, filename) -> torch.Tensor:
+        img = cv2.imread(filename)
+        img = self._resize((to_tensor(img)))
+        return self._input_augmentations(img)
 
 
 class KeyboardImageDataset(KeyboardDataset):

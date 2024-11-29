@@ -8,6 +8,8 @@ import segmentation_models_pytorch as smp
 
 
 class BinarySegmentationModel(KeyboardModel):
+    _save_path = "binary-segmentation"
+
     def __init__(self,
                  arch: Literal["unet", "unetplusplus"],
                  encoder_name: str,
