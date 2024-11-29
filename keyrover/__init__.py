@@ -1,6 +1,7 @@
 from .paths import *
 from .blender import *
 from .plotting import *
+from .util import describe
 
 import os
 if os.getcwd().endswith("notebooks") or os.getcwd().endswith("scripts") or os.getcwd().endswith("models"):

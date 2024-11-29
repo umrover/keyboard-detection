@@ -58,7 +58,7 @@ class KeyMaskImage(KeyboardImage):
     palette = None
 
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path.replace("jpg", "png"))
 
         self._bboxes: Final = self._extract_rects()
         self._crops: Final = tuple(map(self.crop, self._bboxes))

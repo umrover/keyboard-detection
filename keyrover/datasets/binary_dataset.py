@@ -1,42 +1,31 @@
 from typing import Sequence
-import os
 
-from tqdm.notebook import tqdm
 from multiprocessing import Pool
+from tqdm import tqdm
 
-from PIL import Image
-
-import torch
 from torchvision.transforms import v2 as transforms
 
-from keyrover.ml import identity
-from keyrover import RAW_MASKS
-from .abstract import KeyboardDatasetBase
+from keyrover.util import to_tensor
+from keyrover.images.binary_key_mask import KeyBinaryMaskImage
+
+from .abstract import KeyboardDataset
 
 
-class BinaryKeyboardSegmentationDataset(KeyboardDatasetBase):
-    _to_image = transforms.ToImage()
-
-    def __init__(self, paths: Sequence[str], size: tuple[float, float] = None, masks_path: str = RAW_MASKS):
-        super().__init__()
-
-        self._resize = identity if size is None else transforms.Resize(size)
-        self._masks_path = masks_path
+class KeyboardBinaryMaskDataset(KeyboardDataset):
+    def __init__(self, filenames: Sequence[str], size: tuple[int, int], **kwargs):
+        resize = transforms.Resize(size)
 
         with Pool() as p:
-            images = list(tqdm(p.imap(self._get_img, paths), total=len(paths)))
+            images = tqdm(p.imap(KeyboardImage, filenames), total=len(filenames))
+            images = [(to_tensor(image)) for image in images]
 
-        self._images, self._targets = zip(*images)
-        self._target_augmentation = lambda target: target[0, :, :] > 1
+            masks = tqdm(p.imap(KeyBinaryMaskImage, filenames), total=len(filenames))
+            masks = [(to_tensor(mask)) for mask in masks]
 
-    def _get_img(self, path: str) -> tuple[torch.Tensor, torch.Tensor]:
-        img = Image.open(path)
-        img = self._resize(self._to_image(img))
-
-        mask_path = f"{RAW_MASKS}/{os.path.basename(path).removesuffix('.jpg')}.png"
-        target = Image.open(mask_path).convert("L")
-        target = self._resize(self._to_image(target))
-        return img, target
+        super().__init__(images=images, targets=masks, **kwargs)
 
 
-__all__ = ["BinaryKeyboardSegmentationDataset"]
+__all__ = ["KeyboardBinaryMaskDataset"]
+
+
+from keyrover.images import KeyboardImage

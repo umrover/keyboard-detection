@@ -12,7 +12,7 @@ class KeyBinaryMaskImage(KeyboardImage):
     default_folder = "masks"
 
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path.replace("jpg", "png"))
 
         self._image = self.binarize()
         self._image = (self._image > 1).astype("uint8")  # binarize image

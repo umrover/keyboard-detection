@@ -1,4 +1,6 @@
-from typing import Sequence
+from __future__ import annotations
+from typing import Sequence, Literal
+
 import random
 
 import torch
@@ -6,16 +8,19 @@ from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
 from keyrover.vision import identity
+from keyrover.datasets.util import *
 
 
 class KeyboardDataset(Dataset):
-    def __init__(self, images, targets):
+    def __init__(self, images, targets, version: str | None = None):
         self._images = images
         self._targets = targets
 
         self._transforms = identity
         self._input_augmentations = identity
         self._target_augmentations = identity
+
+        self._version: str | None = version
 
     def __len__(self) -> int:
         return len(self._images)
@@ -30,10 +35,37 @@ class KeyboardDataset(Dataset):
 
         return image, target
 
+    @classmethod
+    def load(cls, version: str, n: int = None, **kwargs) -> tuple[KeyboardDataset, KeyboardDataset, KeyboardDataset]:
+        image_paths = get_dataset_paths(version=version)
+        if n is not None:
+            image_paths = image_paths[:n]
+
+        train_paths, test_paths, valid_paths = split_train_test_valid(image_paths, 0.9, 0.1)
+
+        train_dataset = cls(train_paths, version=version, **kwargs)
+        valid_dataset = cls(valid_paths, version=version, **kwargs)
+        test_dataset = cls(test_paths, version=version, **kwargs)
+
+        train_dataset.set_input_augmentations([])
+        valid_dataset.set_input_augmentations([])
+        test_dataset.set_input_augmentations([])
+
+        return train_dataset, valid_dataset, test_dataset
+
     def set_transforms(self, val: Sequence[transforms.Transform]) -> None:
         self._transforms = transforms.Compose(val)
 
-    def set_input_augmentations(self, val: Sequence[transforms.Transform]) -> None:
+    def set_input_augmentations(self, val: list[transforms.Transform],
+                                norm_params: None | dict | Literal["default"] = "default") -> None:
+        val.insert(0, transforms.ToDtype(torch.float32, scale=True))
+
+        if norm_params == "default" and self._version is not None:
+            norm_params = get_dataset_norm_params(version=self._version)
+
+        if norm_params is not None:
+            val.append(transforms.Normalize(norm_params["mean"], norm_params["std"]))
+
         self._input_augmentations = transforms.Compose(val)
 
     def set_target_augmentations(self, val: Sequence[transforms.Transform]) -> None:
