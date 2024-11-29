@@ -42,7 +42,9 @@ def to_tensor(img: ImageType) -> torch.Tensor:
         return img
     img = torch.Tensor(to_numpy(img))
 
-    if len(img.shape) == 2:  # no channel dimension
+    if img.dim() == 1:
+        return img
+    elif img.dim() == 2:  # no channel dimension
         return img.unsqueeze(0)
     return img.permute(2, 0, 1)
 
