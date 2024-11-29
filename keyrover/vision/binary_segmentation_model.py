@@ -2,12 +2,12 @@ from typing import Literal
 
 import numpy as np
 import torch
-import lightning as pl
 
+from .keyboard_model import *
 import segmentation_models_pytorch as smp
 
 
-class BinarySegmentationModel(pl.LightningModule):
+class BinarySegmentationModel(KeyboardModel):
     def __init__(self,
                  arch: Literal["unet", "unetplusplus"],
                  encoder_name: str,
@@ -23,10 +23,9 @@ class BinarySegmentationModel(pl.LightningModule):
         elif loss == "Dice":
             self.loss_fn = smp.losses.DiceLoss(smp.losses.BINARY_MODE, from_logits=True)
         else:
-            raise ValueError("Unknown Loss Function")
+            raise ValueError("Unknown loss function")
 
-        self.learning_rate = lr
-        self.lr = self.learning_rate
+        self.lr = lr
         self.save_hyperparameters()
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
@@ -51,19 +50,6 @@ class BinarySegmentationModel(pl.LightningModule):
         loss = self.loss_fn(prediction, truth.int())
         self.log(f"{stage}_loss", loss)
         return loss
-
-    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "train")
-
-    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "val")
-
-    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "test")
-
-    def configure_optimizers(self) -> dict:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=(self.lr or self.learning_rate))
-        return {"optimizer": optimizer}
 
 
 __all__ = ["BinarySegmentationModel"]
