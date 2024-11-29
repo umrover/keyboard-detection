@@ -11,7 +11,10 @@ class TexcoordImage(KeyboardImage):
     default_folder = "texcoords"
 
     def __init__(self, path: str, reduce: str = "median") -> None:
-        super().__init__(path)
+        super().__init__(path.replace("jpg", "png"))
+
+        if isinstance(self, NormalizedTexcoordImage):
+            self.normalize()
 
         self._mask = KeyMaskImage(path)
         self._texcoords = self._extract_texcoords(reduce=reduce)
@@ -29,4 +32,8 @@ class TexcoordImage(KeyboardImage):
     texcoords: dict[str, TextureCoordinate] = property(lambda self: self._texcoords)
 
 
-__all__ = ["TexcoordImage", "TextureCoordinate"]
+class NormalizedTexcoordImage(TexcoordImage):
+    pass  # normalization is handled by TexcoordImage constructor
+
+
+__all__ = ["TexcoordImage", "NormalizedTexcoordImage", "TextureCoordinate"]
