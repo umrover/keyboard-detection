@@ -1,5 +1,3 @@
-from typing import Iterable, Any
-
 import matplotlib.pyplot as plt
 
 import cv2
@@ -27,33 +25,20 @@ def draw_textbox(img: ImageType, bbox: LabeledBBox, color: Vec3 = (230, 55, 107)
     return img
 
 
-def plot_predictions(img: np.ndarray,
-                     boxes: list["ultralytics.engine.results.Boxes"],
-                     labels: Iterable,
-                     scale: int = 4,
-                     plot: bool = True,
-                     draw_text: bool = True,
-                     fig_kwargs: dict[str, Any] = {},
-                     **kwargs) -> np.ndarray | None:
+def plot_bboxes(img: np.ndarray, boxes: list[LabeledBBox], plot: bool = True, **kwargs) -> np.ndarray | None:
     """
     Plots a YOLO boxes object with labels
     """
-    if fig_kwargs is None:
-        fig_kwargs = {}
-    size = img.shape
-    img = cv2.resize(img, (scale * size[1], scale * size[0]))
+    img = to_numpy(img)
+    for box in boxes:
+        draw_textbox(img, box, **kwargs)
 
-    for cls, box in zip(labels, boxes):
-        x1, y1, x2, y2 = map(lambda v: int(scale * v), box.xyxy[0])
-        draw_textbox(img, (x1, y1), (x2, y2), str(cls), draw_text=draw_text, **kwargs)
-
-    if plot:
-        plt.figure(**fig_kwargs)
-        imshow(img, ax=plt.gca())
-    else:
+    if not plot:
         return img
+    plt.figure()
+    imshow(img, ax=plt.gca())
 
 
 def plot_yolo(results: "ultralytics.engine.results.Results", **kwargs) -> np.ndarray | None:
-    return plot_predictions(results.orig_img, results.boxes,
-                            [f"{box.cls} {box.conf}%" for box in results.boxes], **kwargs)
+    bboxes = [LabeledBBox(*box.xywh[0], f"{box.cls} {box.conf}%") for box in results.boxes]
+    return plot_bboxes(results.orig_img, bboxes, **kwargs)

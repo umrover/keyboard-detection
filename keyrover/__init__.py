@@ -4,7 +4,8 @@ from .plotting import *
 from .util import describe
 
 import os
-if os.getcwd().endswith("notebooks") or os.getcwd().endswith("scripts") or os.getcwd().endswith("models"):
+cwd = os.getcwd()
+if cwd.endswith("notebooks") or cwd.endswith("scripts") or cwd.endswith("models") or cwd.endswith("inference"):
     os.chdir(f"{os.path.dirname(os.path.realpath(__file__))}/..")
 
 

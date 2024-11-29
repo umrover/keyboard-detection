@@ -15,6 +15,10 @@ class BBox:
     def __init__(self, centre: Vec2, width: float, height: float):
         ...
 
+    @overload
+    def __init__(self, x: float, y: float, width: float, height: float):
+        ...
+
     def __init__(self, *args):
         if len(args) == 2:
             self._p1, self._p2 = args
@@ -24,14 +28,24 @@ class BBox:
 
             self._centre = (self._p1[0] + self._p2[0]) / 2, (self._p1[1] + self._p2[1]) / 2
 
-        if len(args) == 3:
+        elif len(args) == 3:
             self._centre, self._width, self._height = args
-            self._p1 = (self._centre[0] - self._width / 2, self._centre[1] - self._height / 2)
-            self._p2 = (self._centre[0] + self._width / 2, self._centre[1] + self._height / 2)
+            self._calculate_p1p2()
+
+        elif len(args) == 4:
+            x, y, self._width, self._height = args
+            self._centre = (x, y)
+            self._calculate_p1p2()
+        else:
+            raise ValueError(f'Invalid args: {args}')
 
         self._p1 = np.array(self._p1)
         self._p2 = np.array(self._p2)
         self._centre = np.array(self._centre)
+
+    def _calculate_p1p2(self):
+        self._p1 = (self._centre[0] - self._width / 2, self._centre[1] - self._height / 2)
+        self._p2 = (self._centre[0] + self._width / 2, self._centre[1] + self._height / 2)
 
     # TODO implement using copy or something
     def scale(self, factor) -> BBox:
@@ -58,6 +72,10 @@ class LabeledBBox(BBox):
 
     @overload
     def __init__(self, centre: Vec2, width: float, height: float, label: str):
+        ...
+
+    @overload
+    def __init__(self, x: float, y: float, width: float, height: float, label: str):
         ...
 
     def __init__(self, *args):

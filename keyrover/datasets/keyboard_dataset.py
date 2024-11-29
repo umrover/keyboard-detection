@@ -25,6 +25,7 @@ class KeyboardDataset(Dataset):
 
     def __init__(self, filenames: Sequence[str], size: tuple[int, int], version: str | None = None, **kwargs):
         self._resize = transforms.Resize(size)
+        self._version: str | None = version
 
         with Pool() as p:
             self._targets = tqdm(p.imap(partial(self._target, **kwargs), filenames), total=len(filenames))
@@ -34,10 +35,10 @@ class KeyboardDataset(Dataset):
             self._images = [self._resize((to_tensor(image))) for image in self._images]
 
         self._transforms = identity
-        self._input_augmentations = identity
         self._target_augmentations = identity
 
-        self._version: str | None = version
+        self._input_augmentations = None
+        self.set_input_augmentations([])
 
     def __len__(self) -> int:
         return len(self._images)
@@ -67,10 +68,6 @@ class KeyboardDataset(Dataset):
         train_dataset = cls(train_paths, version=version, **kwargs)
         valid_dataset = cls(valid_paths, version=version, **kwargs)
         test_dataset = cls(test_paths, version=version, **kwargs)
-
-        train_dataset.set_input_augmentations([])
-        valid_dataset.set_input_augmentations([])
-        test_dataset.set_input_augmentations([])
 
         return train_dataset, valid_dataset, test_dataset
 
