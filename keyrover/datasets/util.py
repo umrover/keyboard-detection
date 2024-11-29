@@ -7,6 +7,7 @@ import pickle
 import numpy as np
 
 from keyrover import DATASETS
+from keyrover.util import to_tensor
 
 
 def get_dataset_paths(version: str, shuffle: bool = True, extension: str = "jpg") -> list[str]:
@@ -24,8 +25,8 @@ def get_dataset_norm_params(version: str) -> dict[str, np.ndarray]:
     return norm_parameters[version]
 
 
-def calculate_dataset_norm_params(_data):
-    d = np.array([np.array(_img) for _img in _data])
+def calculate_dataset_norm_params(data):
+    d = np.array([to_tensor(img) for img in data])
     m = d.mean(axis=(0, -1, -2))
     s = d.std(axis=(0, -1, -2))
     return m, s

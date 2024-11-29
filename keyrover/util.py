@@ -1,8 +1,3 @@
-import numpy as np
-import torch
-
-from PIL import Image
-
 from keyrover.images import KeyboardImage
 from keyrover.typing import *
 
@@ -45,7 +40,11 @@ def to_pillow(img: ImageType) -> Image.Image:
 def to_tensor(img: ImageType) -> torch.Tensor:
     if isinstance(img, torch.Tensor):
         return img
-    return torch.Tensor(to_numpy(img))
+    img = torch.Tensor(to_numpy(img))
+
+    if len(img.shape) == 2:  # no channel dimension
+        return img
+    return img.permute(2, 0, 1)
 
 
 def to_int(vec: tuple[float, ...]) -> tuple[int, ...]:
