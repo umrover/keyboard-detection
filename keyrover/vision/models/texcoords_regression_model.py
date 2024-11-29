@@ -1,15 +1,15 @@
 from typing import Literal
 
-import numpy as np
-import cv2
-
 import torch
-import lightning as pl
+import numpy as np
+
+from .keyboard_model import *
+from keyrover.util import to_numpy
 
 import segmentation_models_pytorch as smp
 
 
-class TexCoordsRegressionModel(pl.LightningModule):
+class TexcoordsRegressionModel(KeyboardModel):
     def __init__(self,
                  arch: Literal["unet", "unetplusplus"],
                  encoder_name: str,
@@ -20,8 +20,7 @@ class TexCoordsRegressionModel(pl.LightningModule):
         self.model = smp.create_model(arch, encoder_name, in_channels=in_channels, classes=out_classes, **kwargs)
         self.loss_fn = torch.nn.MSELoss()
 
-        self.learning_rate = lr
-        self.lr = self.learning_rate
+        self.lr = lr
         self.save_hyperparameters()
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
@@ -33,7 +32,7 @@ class TexCoordsRegressionModel(pl.LightningModule):
             image = image.unsqueeze(0)
 
         with torch.no_grad():
-            pred = self(image).cpu().numpy()
+            pred = to_numpy(self(image))
 
         if len(pred) == 1:
             return pred[0,]
@@ -47,18 +46,5 @@ class TexCoordsRegressionModel(pl.LightningModule):
         self.log(f"{stage}_loss", loss)
         return loss
 
-    def training_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "train")
 
-    def validation_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "val")
-
-    def test_step(self, batch: tuple[torch.Tensor, torch.Tensor], batch_idx: int) -> float:
-        return self._step(batch, "test")
-
-    def configure_optimizers(self) -> dict:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=(self.lr or self.learning_rate))
-        return {"optimizer": optimizer}
-
-
-__all__ = ["TexCoordsRegressionModel"]
+__all__ = ["TexcoordsRegressionModel"]
