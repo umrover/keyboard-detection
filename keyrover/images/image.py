@@ -1,12 +1,16 @@
 from __future__ import annotations
 from typing import overload
 
-import cv2
+import torch
 import numpy as np
 
-from keyrover import DATASETS, ImageType
-from keyrover.plotting import imshow
-from keyrover.vision import BBox
+import cv2
+from PIL import Image
+
+from keyrover.paths import DATASETS
+
+
+ImageType = np.ndarray | Image.Image | torch.Tensor
 
 
 class KeyboardImage:
@@ -65,7 +69,7 @@ class KeyboardImage:
         ...
 
     @overload
-    def crop(self, bbox: BBox) -> np.array:
+    def crop(self, bbox: "BBox") -> np.array:
         ...
 
     def crop(self, *args) -> np.array:
@@ -77,6 +81,7 @@ class KeyboardImage:
         return self._image[y:y + h, x:x + w]
 
     def show(self) -> None:
+        from keyrover.plotting import imshow
         imshow(self._image)
 
     def binarize(self) -> np.ndarray:

@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import cv2
 import numpy as np
 
-from keyrover import ImageType, to_numpy
-
 from .util import *
 from .layout import *
+
+from keyrover.util import to_numpy
+from keyrover.typing import ImageType
 
 
 def _imshow(img: ImageType, ax: plt.Axes | None) -> plt.Axes:

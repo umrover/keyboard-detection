@@ -7,7 +7,8 @@ from ultralytics.engine.results import Boxes, Results
 import cv2
 import numpy as np
 
-from keyrover import Vec3, ImageType, to_numpy
+from keyrover.typing import Vec3, ImageType
+from keyrover.util import to_numpy
 from keyrover.vision.bbox import *
 
 from .image import imshow

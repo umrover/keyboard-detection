@@ -1,12 +1,10 @@
-from typing import Final, Sequence, Iterable, Literal, Any, overload
-
 import numpy as np
 import torch
 
 from PIL import Image
-import cv2
 
-from tqdm.notebook import tqdm
+from keyrover.images import KeyboardImage
+from keyrover.typing import *
 
 
 def describe(arr) -> None:
@@ -17,25 +15,25 @@ def describe(arr) -> None:
         Mean: {arr.mean()}""")
 
 
-ImageType = np.ndarray | Image.Image | torch.Tensor
+def to_numpy(arr, convert_bool: bool = False) -> np.ndarray:
+    if isinstance(arr, (map, filter, zip)):
+        return np.array(tuple(arr))
 
+    if isinstance(arr, (Image.Image, tuple, list)):
+        arr = np.array(arr)
 
-def to_numpy(img: ImageType, convert_bool: bool = False) -> np.ndarray:
-    if isinstance(img, (map, filter, zip)):
-        return np.array(tuple(img))
+    elif isinstance(arr, torch.Tensor):
+        arr = arr.detach().cpu().numpy()
 
-    if isinstance(img, (Image.Image, tuple, list)):
-        img = np.array(img)
+    elif isinstance(arr, KeyboardImage):
+        return arr.image
 
-    elif isinstance(img, torch.Tensor):
-        img = img.detach().cpu().numpy()
+    elif not isinstance(arr, np.ndarray):
+        raise TypeError(f"Can't convert unknown type {type(arr)} to numpy array")
 
-    elif not isinstance(img, np.ndarray):
-        raise TypeError("Can't convert unknown type image to numpy array")
-
-    if convert_bool and img.dtype == bool:
-        img = img.astype("uint8")
-    return img
+    if convert_bool and arr.dtype == bool:
+        arr = arr.astype("uint8")
+    return arr
 
 
 def to_pillow(img: ImageType) -> Image.Image:
@@ -54,6 +52,5 @@ def to_int(vec: tuple[float, ...]) -> tuple[int, ...]:
     return tuple(map(int, vec))
 
 
-Vec2 = tuple[float, float]
-Vec3 = tuple[float, float, float]
-Vec4 = tuple[float, float, float, float]
+__all__ = ["to_int", "to_tensor", "to_pillow", "to_numpy", "describe",
+           "Vec2", "Vec3", "Vec4", "ImageType"]

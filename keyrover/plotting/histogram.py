@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 
 import cv2
 
-from keyrover import ImageType, to_numpy
+from keyrover.typing import ImageType
+from keyrover.util import to_numpy
 
 
 def imhist(img: ImageType | str,

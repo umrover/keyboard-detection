@@ -18,8 +18,8 @@ def get_dataset_paths(version: str, shuffle: bool = True, extension: str = "jpg"
     return image_paths
 
 
-def get_dataset_norm_params(version: str) -> tuple[np.ndarray, np.ndarray]:
-    with open("datasets/segmentation/normalization.bin", "rb") as f:
+def get_dataset_norm_params(version: str) -> dict[str, np.ndarray]:
+    with open("datasets/keyboard/normalization.bin", "rb") as f:
         norm_parameters = pickle.load(f)
     return norm_parameters[version]
 
