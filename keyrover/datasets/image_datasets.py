@@ -1,5 +1,8 @@
 from __future__ import annotations
-from typing import Sequence, Literal
+from typing import Sequence, Literal, Callable
+
+from multiprocessing import Pool
+from tqdm import tqdm
 
 import random
 
@@ -7,14 +10,27 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import v2 as transforms
 
-from keyrover.vision import identity
 from keyrover.datasets.util import *
+from keyrover.util import to_tensor
+from keyrover.vision import identity
+
+from keyrover.images import KeyboardImage
+from keyrover.images.binary_key_mask import KeyBinaryMaskImage
+from keyrover.images.texcoord import NormalizedTexcoordImage
 
 
 class KeyboardDataset(Dataset):
-    def __init__(self, images, targets, version: str | None = None):
-        self._images = images
-        self._targets = targets
+    _target: Callable[[str], KeyboardImage] = None
+
+    def __init__(self, filenames: Sequence[str], size: tuple[int, int], version: str | None = None):
+        resize = transforms.Resize(size)
+
+        with Pool() as p:
+            self._images = tqdm(p.imap(KeyboardImage, filenames), total=len(filenames))
+            self._images = [resize((to_tensor(image))) for image in self._images]
+
+            self._targets = tqdm(p.imap(self._target, filenames), total=len(filenames))
+            self._targets = [resize(to_tensor(arr)) for arr in self._targets]
 
         self._transforms = identity
         self._input_augmentations = identity
@@ -77,3 +93,14 @@ class KeyboardDataset(Dataset):
 
     def random_img(self) -> tuple[torch.Tensor, torch.Tensor]:
         return self[random.randint(0, len(self) - 1)]
+
+
+class KeyboardBinaryMaskDataset(KeyboardDataset):
+    _target = KeyBinaryMaskImage
+
+
+class KeyboardTexcoordDataset(KeyboardDataset):
+    _target = NormalizedTexcoordImage
+
+
+__all__ = ["KeyboardBinaryMaskDataset", "KeyboardTexcoordDataset"]

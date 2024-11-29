@@ -2,8 +2,6 @@ from typing import Iterable, Any
 
 import matplotlib.pyplot as plt
 
-from ultralytics.engine.results import Boxes, Results
-
 import cv2
 import numpy as np
 
@@ -30,7 +28,7 @@ def draw_textbox(img: ImageType, bbox: LabeledBBox, color: Vec3 = (230, 55, 107)
 
 
 def plot_predictions(img: np.ndarray,
-                     boxes: list[Boxes],
+                     boxes: list["ultralytics.engine.results.Boxes"],
                      labels: Iterable,
                      scale: int = 4,
                      plot: bool = True,
@@ -56,6 +54,6 @@ def plot_predictions(img: np.ndarray,
         return img
 
 
-def plot_yolo(results: Results, **kwargs) -> np.ndarray | None:
+def plot_yolo(results: "ultralytics.engine.results.Results", **kwargs) -> np.ndarray | None:
     return plot_predictions(results.orig_img, results.boxes,
                             [f"{box.cls} {box.conf}%" for box in results.boxes], **kwargs)

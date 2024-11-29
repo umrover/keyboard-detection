@@ -80,6 +80,23 @@ class KeyboardImage:
         x, y, w, h = map(int, args)
         return self._image[y:y + h, x:x + w]
 
+    def normalize(self, kind="minmax") -> None:
+        self._image = self._image.astype("float32")
+
+        if kind == "minmax":
+            self._image -= self._image.min()
+            self._image /= self._image.max()
+
+        elif kind == "gaussian":
+            self._image -= self._image.mean()
+            self._image /= self._image.std()
+
+        elif kind == "tanh":
+            self._image = np.tanh(self._image)
+
+        else:
+            raise ValueError(f"Unrecognized normalization kind '{kind}'")
+
     def show(self) -> None:
         from keyrover.plotting import imshow
         imshow(self._image)

@@ -11,11 +11,11 @@ from PIL import Image
 import torch
 from torchvision.transforms import v2 as transforms
 
-from keyrover.ml import identity
-from .abstract import KeyboardDatasetBase
+from keyrover.vision import identity
+from .image_datasets import KeyboardDataset
 
 
-class KeyboardCornersDataset(KeyboardDatasetBase):
+class KeyboardCornersDataset(KeyboardDataset):
     _to_image = transforms.ToImage()
 
     with open("datasets/corners/corners.pkl", "rb") as f:
@@ -33,7 +33,7 @@ class KeyboardCornersDataset(KeyboardDatasetBase):
     def __getitem__(self, idx) -> tuple[torch.Tensor, torch.Tensor]:
         img = self._images[idx]
         target = self._targets[idx]
-        return self._augmentations(img), target
+        return self._input_augmentations(img), target
 
     def _get_img(self, path: str) -> tuple[torch.Tensor, torch.Tensor]:
         img = Image.open(path)
