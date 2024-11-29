@@ -124,4 +124,6 @@ class KeyboardImage:
     dtype = property(lambda self: self._image.dtype)
 
 
-__all__ = ["KeyboardImage", "NormalizationType"]
+ImageType = ImageType | KeyboardImage
+
+__all__ = ["KeyboardImage", "NormalizationType", "ImageType"]

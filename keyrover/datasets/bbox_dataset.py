@@ -10,7 +10,7 @@ from tqdm.notebook import tqdm
 from torchvision.transforms import v2 as transforms
 
 from keyrover import Image, RAW_DATASET, reorder_image_axes, imshow
-from .abstract import KeyboardDataset
+from .keyboard_dataset import KeyboardDataset
 
 
 class KeyboardBBoxDataset(KeyboardDataset):

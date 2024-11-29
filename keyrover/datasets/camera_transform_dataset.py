@@ -11,7 +11,7 @@ from PIL import Image
 import torch
 from torchvision.transforms import v2 as transforms
 
-from .image_datasets import KeyboardDataset
+from .keyboard_dataset import KeyboardDataset
 
 
 class KeyboardCameraTransformDataset(KeyboardDataset):

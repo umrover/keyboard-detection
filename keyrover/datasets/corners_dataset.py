@@ -1,48 +1,21 @@
-from typing import Sequence
-
-import os
 import pickle
 
-from tqdm.notebook import tqdm
-from multiprocessing import Pool
-
-from PIL import Image
-
-import torch
-from torchvision.transforms import v2 as transforms
-
-from keyrover.vision import identity
-from .image_datasets import KeyboardDataset
+from .keyboard_dataset import KeyboardTensorDataset
 
 
-class KeyboardCornersDataset(KeyboardDataset):
-    _to_image = transforms.ToImage()
+class KeyboardCornersDataset(KeyboardTensorDataset):
+    corners = None
 
-    with open("datasets/corners/corners.pkl", "rb") as f:
-        corners = pickle.load(f)
+    @staticmethod
+    def corners_from_filename(filename):
+        if KeyboardCornersDataset.corners is None:
+            with open("datasets/corners/corners.pkl", "rb") as f:
+                KeyboardCornersDataset.corners = pickle.load(f)
 
-    def __init__(self, paths: Sequence[str], size: tuple[float, float] = None):
-        super().__init__()
-        self._resize = identity if size is None else transforms.Resize(size)
+        frame = int(filename.split("_")[1])
+        return KeyboardCornersDataset.corners[frame - 1]
 
-        with Pool() as p:
-            images = list(tqdm(p.imap(self._get_img, paths), total=len(paths)))
-
-        self._images, self._targets = zip(*images)
-
-    def __getitem__(self, idx) -> tuple[torch.Tensor, torch.Tensor]:
-        img = self._images[idx]
-        target = self._targets[idx]
-        return self._input_augmentations(img), target
-
-    def _get_img(self, path: str) -> tuple[torch.Tensor, torch.Tensor]:
-        img = Image.open(path)
-        img = self._resize(self._to_image(img))
-
-        frame = int(os.path.basename(path).split("_")[1]) - 1
-        target = self.corners[frame]
-
-        return img, target
+    _target = corners_from_filename
 
 
 __all__ = ["KeyboardCornersDataset"]
