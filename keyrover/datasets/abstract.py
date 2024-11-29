@@ -30,6 +30,7 @@ class KeyboardDataset(Dataset):
         target = self._targets[item]
 
         image, target = self._transforms(image, target)
+
         image = self._input_augmentations(image)
         target = self._target_augmentations(target)
 
@@ -54,7 +55,10 @@ class KeyboardDataset(Dataset):
         return train_dataset, valid_dataset, test_dataset
 
     def set_transforms(self, val: Sequence[transforms.Transform]) -> None:
-        self._transforms = transforms.Compose(val)
+        if len(val) == 0:
+            self._transforms = identity
+        else:
+            self._transforms = transforms.Compose(val)
 
     def set_input_augmentations(self, val: list[transforms.Transform],
                                 norm_params: None | dict | Literal["default"] = "default") -> None:

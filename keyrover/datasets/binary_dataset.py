@@ -17,10 +17,10 @@ class KeyboardBinaryMaskDataset(KeyboardDataset):
 
         with Pool() as p:
             images = tqdm(p.imap(KeyboardImage, filenames), total=len(filenames))
-            images = [(to_tensor(image)) for image in images]
+            images = [resize((to_tensor(image))) for image in images]
 
             masks = tqdm(p.imap(KeyBinaryMaskImage, filenames), total=len(filenames))
-            masks = [(to_tensor(mask)) for mask in masks]
+            masks = [resize((to_tensor(mask))) for mask in masks]
 
         super().__init__(images=images, targets=masks, **kwargs)
 
