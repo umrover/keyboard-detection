@@ -1,6 +1,6 @@
 from keyrover.color import image_color
 
-from .image import KeyboardImage
+from .image import KeyboardImage, NormalizationType
 from .key_mask import KeyMaskImage
 
 
@@ -14,7 +14,7 @@ class TexcoordImage(KeyboardImage):
         super().__init__(path.replace("jpg", "png"))
 
         if isinstance(self, NormalizedTexcoordImage):
-            self.normalize()
+            self.normalize(self._normalization)
 
         self._mask = KeyMaskImage(path)
         self._texcoords = self._extract_texcoords(reduce=reduce)
@@ -33,7 +33,12 @@ class TexcoordImage(KeyboardImage):
 
 
 class NormalizedTexcoordImage(TexcoordImage):
-    pass  # normalization is handled by TexcoordImage constructor
+    _normalization = "minmax"
+
+    def __init__(self, *args, kind: NormalizationType = "minmax", **kwargs):
+        self._normalization = kind
+        super().__init__(*args, **kwargs)  # normalization is handled by TexcoordImage constructor
 
 
-__all__ = ["TexcoordImage", "NormalizedTexcoordImage", "TextureCoordinate"]
+__all__ = ["TexcoordImage", "NormalizedTexcoordImage",
+           "TextureCoordinate", "NormalizationType"]

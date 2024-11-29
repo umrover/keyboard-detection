@@ -5,6 +5,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 import random
+from functools import partial
 
 import torch
 from torch.utils.data import Dataset
@@ -20,16 +21,16 @@ from keyrover.images.texcoord import NormalizedTexcoordImage
 
 
 class KeyboardDataset(Dataset):
-    _target: Callable[[str], KeyboardImage] = None
+    _target: Callable[[str, ...], KeyboardImage] = None
 
-    def __init__(self, filenames: Sequence[str], size: tuple[int, int], version: str | None = None):
+    def __init__(self, filenames: Sequence[str], size: tuple[int, int], version: str | None = None, **kwargs):
         resize = transforms.Resize(size)
 
         with Pool() as p:
             self._images = tqdm(p.imap(KeyboardImage, filenames), total=len(filenames))
             self._images = [resize((to_tensor(image))) for image in self._images]
 
-            self._targets = tqdm(p.imap(self._target, filenames), total=len(filenames))
+            self._targets = tqdm(p.imap(partial(self._target, **kwargs), filenames), total=len(filenames))
             self._targets = [resize(to_tensor(arr)) for arr in self._targets]
 
         self._transforms = identity

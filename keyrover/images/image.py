@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import overload
+from typing import overload, Literal
 
 import torch
 import numpy as np
@@ -11,6 +11,7 @@ from keyrover.paths import DATASETS
 
 
 ImageType = np.ndarray | Image.Image | torch.Tensor
+NormalizationType = Literal["minmax", "unit", "sigmoid", "tanh", "gaussian"]
 
 
 class KeyboardImage:
@@ -92,7 +93,15 @@ class KeyboardImage:
             self._image /= self._image.std()
 
         elif kind == "tanh":
+            self._image -= 255 / 2
             self._image = np.tanh(self._image)
+
+        elif kind == "unit":
+            self._image -= 255 / 2
+            self._image /= 255 / 2
+
+        elif kind == "sigmoid":
+            raise NotImplementedError()
 
         else:
             raise ValueError(f"Unrecognized normalization kind '{kind}'")
@@ -115,4 +124,4 @@ class KeyboardImage:
     dtype = property(lambda self: self._image.dtype)
 
 
-__all__ = ["KeyboardImage"]
+__all__ = ["KeyboardImage", "NormalizationType"]
