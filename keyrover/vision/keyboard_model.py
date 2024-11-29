@@ -19,5 +19,8 @@ class KeyboardModel(pl.LightningModule):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
         return {"optimizer": optimizer}
 
+    def save(self, filepath: str):
+        torch.save(self.state_dict(), filepath)
+
 
 __all__ = ["KeyboardModel"]
