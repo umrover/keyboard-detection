@@ -16,7 +16,7 @@ def get_key_texcoords(path: str) -> dict[str, TextureCoordinate]:
 
 
 if __name__ == "__main__":
-    dataset = "v4"
+    dataset = "v4-nodistort"
 
     paths = glob.glob(f"{dataset}/*.png")
     with Pool() as p:
