@@ -29,6 +29,10 @@ class TexcoordImage(KeyboardImage):
 
         return texcoords
 
+    def scatter(self, color="#ccc", **kwargs):
+        from keyrover.plotting import scatter
+        return scatter(self._texcoords.values(), color=color, **kwargs)
+
     texcoords: dict[str, TextureCoordinate] = property(lambda self: self._texcoords)
 
 

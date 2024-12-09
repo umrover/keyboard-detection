@@ -11,6 +11,9 @@ class Palette:
         self.colors = np.array(colors, dtype="uint8")
         self.cKDTree = cKDTree(self.colors)
 
+    def __iter__(self):
+        return iter(self.colors)
+
     def fit(self, arr: np.ndarray) -> np.ndarray:
         arr = to_numpy(arr)
         indices = self.cKDTree.query(arr, k=1)[1]

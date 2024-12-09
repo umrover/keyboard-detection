@@ -65,8 +65,8 @@ class KeyMaskImage(KeyboardImage):
 
         self._keys: Final = self._extract_keys()
 
-    def __iter__(self) -> Key:
-        yield from self._keys
+    def __iter__(self):
+        return iter(self._keys)
 
     def _extract_rects(self) -> tuple[BBox]:
         bboxes = []
@@ -122,7 +122,16 @@ class KeyMaskImage(KeyboardImage):
 
         return int(b * 144 + g * 12 + r)
 
+    @staticmethod
+    def scatter(color="green", **kwargs):
+        from keyrover.plotting import scatter
+        return scatter(KeyMaskImage.palette.colors[:, (0, -1)], color=color, **kwargs)
+
+
+def keys_from_yolo(results: "ultralytics.engine.results.Results") -> list[LabeledBBox]:
+    return [LabeledBBox(*box.xywh[0], i) for i, box in enumerate(results.boxes)]
+
 
 KeyMaskImage.palette = Palette([KeyMaskImage.id_to_color(i) for i in range(100)])
 
-__all__ = ["KeyMaskImage"]
+__all__ = ["KeyMaskImage", "keys_from_yolo"]
