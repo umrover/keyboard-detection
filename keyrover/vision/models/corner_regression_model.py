@@ -45,8 +45,8 @@ class CornersRegressionModel(KeyboardModel):
         pred = to_numpy(transform(pred))
 
         if len(pred) == 1:
-            return pred[0,]
-        return pred
+            pred = pred[0,]
+        return pred.transpose((1, 2, 0))
 
     def forward(self, image: torch.Tensor, mask: bool = True) -> torch.Tensor:
         return self.model(image)

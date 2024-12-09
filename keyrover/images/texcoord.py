@@ -1,6 +1,10 @@
-from keyrover.color import image_color
+from typing import Iterable, overload
 
-from .image import KeyboardImage, NormalizationType
+from keyrover.color import image_color
+from keyrover.vision.bbox import LabeledBBox
+from keyrover.util import to_numpy
+
+from .image import KeyboardImage, NormalizationType, ImageType
 from .key_mask import KeyMaskImage
 
 
@@ -10,21 +14,43 @@ TextureCoordinate = tuple[float, float]
 class TexcoordImage(KeyboardImage):
     default_folder = "texcoords"
 
-    def __init__(self, path: str, reduce: str = "median") -> None:
-        super().__init__(path.replace("jpg", "png"))
+    @overload
+    def __init__(self, texcoords: ImageType, bboxes: Iterable[LabeledBBox], reduce: str = "median"):
+        ...
+
+    @overload
+    def __init__(self, path: str, reduce: str = "median"):
+        ...
+
+    def __init__(self, *args, reduce: str = "median") -> None:
+        if len(args) == 1:
+            path = args[0]
+            super().__init__(path.replace("jpg", "png"))
+            self._bboxes = KeyMaskImage(path)
+
+        else:
+            super().__init__(to_numpy(args[0]))
+            self._bboxes = args[1]
 
         if isinstance(self, NormalizedTexcoordImage):
             self.normalize(self._normalization)
 
-        self._mask = KeyMaskImage(path)
         self._texcoords = self._extract_texcoords(reduce=reduce)
 
     def _extract_texcoords(self, reduce: str) -> dict[str, TextureCoordinate]:
         texcoords = {}
 
-        for key in self._mask:
+        for key in self._bboxes:
             crop = self.crop(key)
-            r, g, _ = image_color(crop, reduce=reduce)
+
+            if len(crop) == 0:
+                raise ValueError(f"bounding box likely out-of-bounds, {key}")
+
+            if (color := image_color(crop, reduce=reduce)) is None:
+                print(f"WARNING: empty bounding box {key}")
+                continue
+
+            r, g, _ = color
             texcoords[key.label] = (r, g)
 
         return texcoords

@@ -43,6 +43,9 @@ class BBox:
         self._p2 = np.array(self._p2)
         self._centre = np.array(self._centre)
 
+    def __repr__(self) -> str:
+        return f"BBox({self.centre:.2f}, {self.width:.2f}, {self.height:.2f})"
+
     def _calculate_p1p2(self):
         self._p1 = (self._centre[0] - self._width / 2, self._centre[1] - self._height / 2)
         self._p2 = (self._centre[0] + self._width / 2, self._centre[1] + self._height / 2)
@@ -81,6 +84,9 @@ class LabeledBBox(BBox):
     def __init__(self, *args):
         super().__init__(*args[:-1])
         self._label: str = args[-1]
+
+    def __repr__(self) -> str:
+        return f"BBox('{self.label}', {self.centre:.2f}, {self.width:.2f}, {self.height:.2f})"
 
     # TODO remove
     def scale(self, factor) -> LabeledBBox:
