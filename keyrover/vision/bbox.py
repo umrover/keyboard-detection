@@ -3,7 +3,7 @@ from typing import overload
 
 import numpy as np
 
-from keyrover.typing import Vec2
+from keyrover.mrovertyping import Vec2
 
 
 class BBox:

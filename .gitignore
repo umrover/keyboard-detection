@@ -27,3 +27,4 @@ models/yolo-multiclass
 /scripts/countlines.py
 venv
 requirements.txt
+**/__pycache__/**

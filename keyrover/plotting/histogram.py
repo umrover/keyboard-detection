@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 import cv2
 
-from keyrover.typing import ImageType
+from keyrover.mrovertyping import ImageType
 from keyrover.util import to_numpy
 
 

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
-from keyrover.typing import Vec3, ImageType
+from keyrover.mrovertyping import Vec3, ImageType
 from keyrover.util import to_numpy
 from keyrover.vision.bbox import *
 

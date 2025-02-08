@@ -41,8 +41,8 @@ class KeyboardImage:
 
         self._shape = self._image.shape[0], self._image.shape[1]
 
-    def __getitem__(self, *args) -> np.ndarray:
-        return self._image[*args]
+    def __getitem__(self, args) -> np.ndarray:
+        return self._image[args]
 
     def __eq__(self, other):
         return self._image == other

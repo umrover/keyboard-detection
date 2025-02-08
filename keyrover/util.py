@@ -1,5 +1,5 @@
 from keyrover.images import KeyboardImage
-from keyrover.typing import *
+from keyrover.mrovertyping import *
 
 
 def describe(arr) -> None:

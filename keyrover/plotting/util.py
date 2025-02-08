@@ -3,7 +3,7 @@ from __future__ import annotations
 import torch
 import numpy as np
 
-from keyrover.typing import ImageType
+from keyrover.mrovertyping import ImageType
 from keyrover.util import to_numpy
 
 
