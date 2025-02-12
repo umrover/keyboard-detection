@@ -11,6 +11,7 @@ from keyrover.util import to_tensor
 
 
 def get_dataset_paths(version: str, shuffle: bool = True, extension: str = "jpg") -> list[str]:
+    print(f"DATASETS {DATASETS}")
     image_paths = glob.glob(f"{version}/**.{extension}", root_dir=f"{DATASETS}/keyboard")
 
     if shuffle:

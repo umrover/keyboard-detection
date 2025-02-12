@@ -1,7 +1,7 @@
 from .paths import *
 from .blender import *
 from .plotting import *
-from .util import describe
+from .util import describe, to_pillow
 
 import os
 cwd = os.getcwd()

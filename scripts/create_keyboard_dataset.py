@@ -142,6 +142,7 @@ def create_random_image(path):
 
 if __name__ == "__main__":
     DATASET_VERSION = 4
+    KEYBOARD_DATASET = '/home/john/random/keyrover_dataset'
 
     shutil.rmtree(KEYBOARD_DATASET)
     os.mkdir(KEYBOARD_DATASET)

@@ -60,6 +60,7 @@ class KeyboardDataset(Dataset):
     @classmethod
     def load(cls, version: str, n: int = None, **kwargs) -> tuple[KeyboardDataset, KeyboardDataset, KeyboardDataset]:
         image_paths = get_dataset_paths(version=version)
+        print(f'Image Paths {image_paths}')
         if n is not None:
             image_paths = image_paths[:n]
 
