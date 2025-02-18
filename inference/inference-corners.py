@@ -9,6 +9,7 @@ from keyrover.color import NamedPalette
 from keyrover.vision.models import CornersRegressionModel
 from keyrover.datasets import KeyboardCornersDataset
 import torch
+import matplotlib.pyplot as plt
 
 SIZE = (256, 256)
 
@@ -23,12 +24,12 @@ model.eval()
 
 yolo = YOLO("models/yolo/train4/weights/best.pt")
 
-path = f"{DATASETS}/test/image/a0.png"
+path = f"{DATASETS}/test/image/f52.png"
 img = test_dataset.load_image(path)
 
 # TODO yolo & model to use same input image size
 
-bboxes = yolo.predict(path, conf=0.5, iou=0.3)[0]
+bboxes = yolo.predict(path, conf=0.3, iou=0.3)[0]
 mask = model.predict(img)
 mask = cv2.resize(mask, bboxes.orig_shape[::-1])
 
@@ -130,4 +131,8 @@ width, height, _ = img.shape
 img = cv2.resize(img, (height * scale, width * scale))
 boxes = [LabeledBBox(*box.xywh[0], label).scale(scale) for box, label in zip(bboxes.boxes, keys)]
 
+print(boxes)
+
 plot_bboxes(img, boxes)
+
+plt.show()

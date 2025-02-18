@@ -20,6 +20,7 @@ class BBox:
         ...
 
     def __init__(self, *args):
+        print(args)
         if len(args) == 2:
             self._p1, self._p2 = args
 
@@ -30,11 +31,20 @@ class BBox:
 
         elif len(args) == 3:
             self._centre, self._width, self._height = args
+
+            self._width = self._width.item()
+            self._height = self._height.item()
+            self._centre = [tensor.cpu() for tensor in self._centre]
+
             self._calculate_p1p2()
 
         elif len(args) == 4:
             x, y, self._width, self._height = args
-            self._centre = (x, y)
+
+            self._width = self._width.item()
+            self._height = self._height.item()
+
+            self._centre = (x.item(), y.item())
             self._calculate_p1p2()
         else:
             raise ValueError(f'Invalid args: {args}')
@@ -86,7 +96,7 @@ class LabeledBBox(BBox):
         self._label: str = args[-1]
 
     def __repr__(self) -> str:
-        return f"BBox('{self.label}', {self.centre:.2f}, {self.width:.2f}, {self.height:.2f})"
+        return f"BBox('{self.label}', {self.centre}, {self.width:.2f}, {self.height:.2f})"
 
     # TODO remove
     def scale(self, factor) -> LabeledBBox:

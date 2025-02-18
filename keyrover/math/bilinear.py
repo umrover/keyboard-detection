@@ -60,8 +60,8 @@ class InterpolateQuad(BatchedLinearAlgebra):
         result = result[:, :, :, :3] / result[:, :, :, -1:]
 
         # filter any points outside the valid range
-        result[(result.max(dim=-1)[0] > 1)] = 0
-        result[result.min(dim=-1)[0] < 0] = 0
+        #result[(result.max(dim=-1)[0] > 1)] = 0
+        #result[result.min(dim=-1)[0] < 0] = 0
 
         # reorder dimensions from (batch, y, x, channel) to (batch, channel, y, x)
         result = torch.einsum('byxc -> bcyx', result)
