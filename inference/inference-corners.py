@@ -13,12 +13,14 @@ import matplotlib.pyplot as plt
 
 SIZE = (256, 256)
 
-print(f'MPS Available {torch.backends.mps.is_available()}')
-
 dataset = "v4-nodistort"
 test_dataset = KeyboardCornersDataset([], size=SIZE, version=dataset)
 
 model = CornersRegressionModel.load("magic-wave-28.pt")
+
+torch.onnx.export(model, torch.zeros((1, 3, 640, 640)), 'magic.onnx', opset_version=12)
+
+
 model.to(device)
 model.eval()
 
@@ -31,7 +33,12 @@ img = test_dataset.load_image(path)
 
 bboxes = yolo.predict(path, conf=0.3, iou=0.3)[0]
 mask = model.predict(img)
+print(f'mask {mask}')
 mask = cv2.resize(mask, bboxes.orig_shape[::-1])
+print(f'mask shape {mask.shape}')
+print(f'mask {mask}')
+
+
 
 out = plot_yolo(bboxes, draw_text=False, plot=False)
 imshow(out, mask)

@@ -41,6 +41,8 @@ class CornersRegressionModel(KeyboardModel):
             pred = self.forward(image, mask=mask)
         pred = KeyboardCornersDataset.denormalize(pred)
 
+        print(f'pred {pred}')
+
         transform = InterpolateQuad(len(image), width=640, height=480, device=self.device)
         pred = to_numpy(transform(pred))
 
